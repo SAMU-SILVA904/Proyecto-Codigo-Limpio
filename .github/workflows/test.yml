@@ -17,3 +17,5 @@ jobs:
         with:
           python-version-file: "pyproject.toml"
           
+      - name: Run Ruff (linter)
+        run: uv run ruff check 
