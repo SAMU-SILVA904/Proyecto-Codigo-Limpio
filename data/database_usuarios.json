@@ -1,0 +1,27 @@
+[
+    {
+        "id": 1,
+        "nombre_usuario": "carlos_gerente",
+        "rol": "gerente",
+        "carrito": []
+    },
+    {
+        "id": 2,
+        "nombre_usuario": "ana_empleado",
+        "rol": "empleado",
+        "carrito": [
+            {
+                "id_producto": 101,
+                "nombre": "Leche Entera",
+                "precio_unitario": 4500.0,
+                "cantidad": 3
+            },
+            {
+                "id_producto": 102,
+                "nombre": "Pan Tajado",
+                "precio_unitario": 3200.0,
+                "cantidad": 1
+            }
+        ]
+    }
+]
