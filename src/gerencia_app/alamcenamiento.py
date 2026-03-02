@@ -1,8 +1,8 @@
 import json
 from pathlib import Path
-from typing import List, Type, TypeVar, Any
+from typing import List, Type, TypeVar
 from dataclasses import asdict
-from .models import Usuario, Producto, Rol, Carrito, ItemCarrito
+from .models import Usuario, Rol, Carrito, ItemCarrito
 
 variable_universal = TypeVar("Variable_universal")
 """
