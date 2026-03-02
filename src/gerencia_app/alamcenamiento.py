@@ -5,13 +5,28 @@ from dataclasses import asdict
 from .models import Usuario, Producto, Rol, Carrito, ItemCarrito
 
 variable_universal = TypeVar("Variable_universal")
+"""
+Esto es un placeholder para indicar que puede ser cualquier tipo de dato. 
+Se usa para indicar que el JSONStorage puede manejar cualquier modelo de datos (Usuario, Producto, etc) 
+todo esto sin necesidad de crear una clase de almacenamiento específica para cada uno.
+
+Referencia: vscode
+"""
 
 class JSONStorage:
+    """
+    Clase encargada de manejar el almacenamiento en formato JSON para cualquier modelo de datos.
+    """
+    
     def __init__(self, base_a_guardar: Path, modelo_clase: Type[variable_universal]):
         self.base_a_guardar = base_a_guardar
         self.modelo_clase = modelo_clase
     
     def load(self) -> List[variable_universal]:
+        """
+        Carga los datos desde el archivo JSON y convierte cada diccionario a una instancia del modelo_clase
+        Devuelve la lista de objetos.
+        """
         if not self.base_a_guardar.exists():
             return []
         
@@ -27,14 +42,18 @@ class JSONStorage:
                 mi_diccionarios_item = [ItemCarrito(**cada_dict) for cada_dict in lista_del_dict_de_carrito] # "**cada_dict" hace que la llave se iguale con el contenido llave = contenido
                 mi_diccionario_actual["carrito"] = Carrito(items=mi_diccionarios_item)
                 
-                objetos_finales.append(Usuario(**mi_dicciop))
+                objetos_finales.append(Usuario(**mi_diccionario_actual))
             else:
-                objetos_finales.append(self.modelo_clase(**mi_dicciop))
+                objetos_finales.append(self.modelo_clase(**mi_diccionario_actual))
                 
         return objetos_finales
     
     def save(self, items: List[variable_universal]) -> None:
-        self.base_a_guardar.parent.mkdir(parents=True, exist_ok=True)
+        """
+        Toma una lista de objetos, los convierte a diccionarios y los guarda en el archivo JSON.
+        """
+        
+        self.base_a_guardar.parent.mkdir(parents=True, exist_ok=True) # Asegura que la carpeta exista antes de guardar el archivo
         
         datos_preparados = []
         for objetos in items:

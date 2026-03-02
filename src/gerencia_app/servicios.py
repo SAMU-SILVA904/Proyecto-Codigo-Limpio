@@ -1,4 +1,4 @@
-from typing import List, Optional
+from typing import List
 from .models import Usuario, Producto, Rol, ItemCarrito
 from .storage import JSONStorage
 from .exceptions import (
