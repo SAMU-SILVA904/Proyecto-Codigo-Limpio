@@ -253,38 +253,38 @@ class TiendaService:
         self.storage_usuarios.save(usuarios)
     
     def mostrar_carrito(self, usuario: Usuario) -> None:
-    """
-    Muestra el contenido del carrito de un usuario en forma de tabla usando Rich.
-    Valida: Si el carrito está vacío.
-    """
-    console: Console = Console()
-    
-    if not usuario.carrito.items:
-        console.print("[yellow]El carrito está vacío[/yellow]")
-        return
-    
-    table: Table = Table(title=f"Carrito de {usuario.nombre_usuario}", show_header=True, header_style="bold magenta")
-    table.add_column("ID Producto", style="cyan", width=12)
-    table.add_column("Nombre", style="green", width=20)
-    table.add_column("Precio Unitario", style="yellow", width=15)
-    table.add_column("Cantidad", style="blue", width=10)
-    table.add_column("Subtotal", style="red", width=15)
-    
-    total_carrito: float = 0
-    for item in usuario.carrito.items:
-        subtotal: float = item.precio_unitario * item.cantidad
-        total_carrito += subtotal
-        table.add_row(
-            str(item.id_producto),
-            item.nombre,
-            f"${item.precio_unitario:.2f}", #El :.2f es para formatear el número a 2 decimales y si hay más de 2 decimales, los redondea.
-            str(item.cantidad),
-            f"${subtotal:.2f}"
-        )
-    
-    console.print(table)
-    console.print(f"\n[bold green]Total del carrito: ${total_carrito:.2f}[/bold green]")
-    
+        """
+        Muestra el contenido del carrito de un usuario en forma de tabla usando Rich.
+        Valida: Si el carrito está vacío.
+        """
+        console: Console = Console()
+        
+        if not usuario.carrito.items:
+            console.print("[yellow]El carrito está vacío[/yellow]")
+            return
+        
+        table: Table = Table(title=f"Carrito de {usuario.nombre_usuario}", show_header=True, header_style="bold magenta")
+        table.add_column("ID Producto", style="cyan", width=12)
+        table.add_column("Nombre", style="green", width=20)
+        table.add_column("Precio Unitario", style="yellow", width=15)
+        table.add_column("Cantidad", style="blue", width=10)
+        table.add_column("Subtotal", style="red", width=15)
+        
+        total_carrito: float = 0
+        for item in usuario.carrito.items:
+            subtotal: float = item.precio_unitario * item.cantidad
+            total_carrito += subtotal
+            table.add_row(
+                str(item.id_producto),
+                item.nombre,
+                f"${item.precio_unitario:.2f}", #El :.2f es para formatear el número a 2 decimales y si hay más de 2 decimales, los redondea.
+                str(item.cantidad),
+                f"${subtotal:.2f}"
+            )
+        
+        console.print(table)
+        console.print(f"\n[bold green]Total del carrito: ${total_carrito:.2f}[/bold green]")
+        
     def mostrar_usuarios(self, id_gerente: int) -> None:
         """
         Muestra todos los usuarios del sistema en forma de tabla. 
