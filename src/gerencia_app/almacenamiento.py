@@ -2,7 +2,7 @@ import json
 from pathlib import Path
 from typing import List, Type, TypeVar
 from dataclasses import asdict
-from .models import Usuario, Rol, Carrito, ItemCarrito
+from .modelos import Usuario, Rol, Carrito, ItemCarrito
 
 variable_universal = TypeVar("Variable_universal")
 """
@@ -57,8 +57,7 @@ class JSONStorage:
         
         datos_preparados = []
         for objetos in items:
-            # asdict convierte TODA la jerarquía de objetos a diccionarios
-            dicccionario_objetos = asdict(objetos)
+            dicccionario_objetos = asdict(objetos) # asdict convierte TODA la jerarquía de objetos a diccionarios
             
             if "rol" in dicccionario_objetos:
                 dicccionario_objetos["rol"] = objetos.rol.value

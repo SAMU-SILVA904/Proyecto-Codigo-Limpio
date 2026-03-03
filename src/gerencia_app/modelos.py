@@ -16,7 +16,7 @@ class ItemCarrito:
     Modelo para representar un item dentro del carrito de compras.
     """
     
-    id_producto: int
+    producto_id: int
     nombre: str
     precio_unitario: float
     cantidad: int
@@ -35,7 +35,7 @@ class Usuario:
     Modelo para representar un usuario de la tienda, con su rol y carrito de compras.
     """
     
-    id: int
+    usuario_id: int
     nombre_usuario: str
     rol: Rol
     carrito: Carrito = field(default_factory=Carrito)
@@ -46,7 +46,7 @@ class Producto:
     Modelo para representar un producto en el inventario de la tienda.
     """
     
-    id: int
+    producto_id: int
     nombre: str
     precio: float
     stock: int

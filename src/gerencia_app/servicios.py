@@ -18,7 +18,7 @@ from .exepciones import (
     IdProductoInvalidoError
 )
 
-class TiendaService:
+class TiendaServicios:
     """
     Servicio para manejar la lógica de negocio de la tienda.
     """
@@ -59,26 +59,26 @@ class TiendaService:
         usuarios: list[Usuario] = self.obtener_usuarios()
         productos: list[Producto] = self.obtener_productos()
         
-        usuario: Usuario = next((este_usuario for este_usuario in usuarios if este_usuario.id == id_usuario), None) #Next devuelve el primer elemento que cumple la condición o None si no encuentra nada
+        usuario: Usuario = next((este_usuario for este_usuario in usuarios if este_usuario.usuario_id == id_usuario), None) #Next devuelve el primer elemento que cumple la condición o None si no encuentra nada
         if not usuario:
             raise UsuarioNoEncontradoError(id_usuario)
         if usuario.rol != Rol.EMPLEADO:
             raise PermisoDenegadoError("Solo los empleados pueden usar el carrito")
         
-        producto: Producto = next((este_producto for este_producto in productos if este_producto.id == id_producto), None)
+        producto: Producto = next((este_producto for este_producto in productos if este_producto.producto_id == id_producto), None)
         if not producto:
             raise ProductoNoEncontradoError(id_producto)
         
         if producto.stock < cantidad:
             raise StockInsuficienteError(id_producto, producto.stock)
         
-        item_existente: ItemCarrito = next((este_item for este_item in usuario.carrito.items if este_item.id_producto == id_producto),None)
+        item_existente: ItemCarrito = next((este_item for este_item in usuario.carrito.items if este_item.producto_id == id_producto),None)
         
         if item_existente:
             item_existente.cantidad += cantidad
         else:
             nuevo_item: ItemCarrito = ItemCarrito(
-                id_producto=producto.id,
+                producto_id=producto.producto_id,
                 nombre=producto.nombre,
                 precio_unitario=producto.precio,
                 cantidad=cantidad
@@ -99,7 +99,7 @@ class TiendaService:
         usuarios: list[Usuario] = self.obtener_usuarios()
         productos: list[Producto] = self.obtener_productos()
 
-        usuario: Usuario = next((este_usuario for este_usuario in usuarios if este_usuario.id == id_usuario), None)
+        usuario: Usuario = next((este_usuario for este_usuario in usuarios if este_usuario.usuario_id == id_usuario), None)
         if not usuario:
             raise UsuarioNoEncontradoError(id_usuario)
         if usuario.rol != Rol.EMPLEADO:
@@ -108,16 +108,16 @@ class TiendaService:
             raise CarritoVacioError("El carrito está vacío, no se puede facturar")
 
         for item in usuario.carrito.items:
-            producto_en_inventario: Producto = next((este_producto for este_producto in productos if este_producto.id == item.id_producto), None)
+            producto_en_inventario: Producto = next((este_producto for este_producto in productos if este_producto.producto_id == item.producto_id), None)
             if not producto_en_inventario:
-                raise ProductoNoEncontradoError(item.id_producto)
+                raise ProductoNoEncontradoError(item.producto_id)
             if producto_en_inventario.stock < item.cantidad:
-                raise StockInsuficienteError(item.id_producto, producto_en_inventario.stock if producto_en_inventario else 0)
+                raise StockInsuficienteError(item.producto_id, producto_en_inventario.stock if producto_en_inventario else 0)
             
         for item in usuario.carrito.items:
-            producto_en_inventario: Producto = next((este_producto for este_producto in productos if este_producto.id == item.id_producto), None)
+            producto_en_inventario: Producto = next((este_producto for este_producto in productos if este_producto.producto_id == item.producto_id), None)
             if not producto_en_inventario:
-                raise ProductoNoEncontradoError(item.id_producto)
+                raise ProductoNoEncontradoError(item.producto_id)
             producto_en_inventario.stock -= item.cantidad
 
         usuario.carrito.items = []
@@ -125,7 +125,7 @@ class TiendaService:
         self.storage_productos.save(productos)
         self.storage_usuarios.save(usuarios)
 
-    def crear_producto(self, id_gerente: int, nombre: str, precio: float, stock: int) -> None:
+    def crear_producto(self, id_gerente: int, nombre_nuevo_producto: str, precio_nuevo_producto: float, stock_nuevo_producto: int) -> None:
         """
         Crea un nuevo producto.
         Valida: el id del gerente, nombre, precio, stock y permiso de usuario (solo gerentes pueden ejecutarla).
@@ -134,17 +134,17 @@ class TiendaService:
         if id_gerente <= 0:
             raise IdUsuarioInvalidoError(id_gerente)
         
-        if not nombre.strip():
-            raise NombreProductoInvalidoError(nombre)
+        if not nombre_nuevo_producto.strip():
+            raise NombreProductoInvalidoError(nombre_nuevo_producto)
         
-        if precio <= 0:
-            raise CantidadInvalidaError(precio)
+        if precio_nuevo_producto <= 0:
+            raise CantidadInvalidaError(precio_nuevo_producto)
         
-        if stock < 0:
-            raise CantidadInvalidaError(stock)
+        if stock_nuevo_producto < 0:
+            raise CantidadInvalidaError(stock_nuevo_producto)
         
         usuarios: list[Usuario] = self.obtener_usuarios()
-        gerente: Usuario = next((este_usuario for este_usuario in usuarios if este_usuario.id == id_gerente), None)
+        gerente: Usuario = next((este_usuario for este_usuario in usuarios if este_usuario.usuario_id == id_gerente), None)
 
         if not gerente:
             raise UsuarioNoEncontradoError(id_gerente)
@@ -153,17 +153,17 @@ class TiendaService:
         
         productos: list[Producto] = self.obtener_productos()
         
-        if any(este_producto.nombre.lower() == nombre.lower() for este_producto in productos): #Any devuelve True si al menos un elemento del iterable cumple la condición
-            raise ProductoYaExisteError(nombre)
+        if any(este_producto.nombre.lower() == nombre_nuevo_producto.lower() for este_producto in productos): #Any devuelve True si al menos un elemento del iterable cumple la condición
+            raise ProductoYaExisteError(nombre_nuevo_producto)
         
         
-        nuevo_id: int = max([este_producto.id for este_producto in productos], default=0) + 1
-        nuevo_producto: Producto = Producto(id=nuevo_id, nombre=nombre, precio=precio, stock=stock)
+        nuevo_id: int = max([este_producto.producto_id for este_producto in productos], default=0) + 1
+        nuevo_producto: Producto = Producto(producto_id=nuevo_id, nombre=nombre_nuevo_producto, precio=precio_nuevo_producto, stock=stock_nuevo_producto)
         
         productos.append(nuevo_producto)
         self.storage_productos.save(productos)
         
-    def crear_usuario(self, id_gerente: int, nombre_usuario: str, rol: Rol) -> None:
+    def crear_usuario(self, id_gerente: int, nombre_nuevo_usuario: str, rol_nuevo_usuario: Rol) -> None:
         """
         Crea un nuevo usuario.
         Valida: el id del gerente, nombre de usuario, rol y permiso de usuario (solo gerentes pueden ejecutarla).
@@ -172,25 +172,25 @@ class TiendaService:
         if id_gerente <= 0:
             raise IdUsuarioInvalidoError(id_gerente)
         
-        if not nombre_usuario.strip():
-            raise NombreUsuarioInvalidoError(nombre_usuario)
+        if not nombre_nuevo_usuario.strip():
+            raise NombreUsuarioInvalidoError(nombre_nuevo_usuario)
         
-        if rol not in [Rol.CLIENTE, Rol.GERENTE]:
-            raise PermisoDenegadoError("El rol especificado no es válido. Debe ser 'cliente' o 'gerente'.")
+        if rol_nuevo_usuario not in [Rol.GERENTE, Rol.EMPLEADO]:
+            raise PermisoDenegadoError("El rol especificado no es válido. Debe ser 'gerente' o 'empleado'.")
         
         usuarios: list[Usuario] = self.obtener_usuarios()
-        gerente: Usuario = next((este_usuario for este_usuario in usuarios if este_usuario.id == id_gerente), None)
+        gerente: Usuario = next((este_usuario for este_usuario in usuarios if este_usuario.usuario_id == id_gerente), None)
 
         if not gerente:
             raise UsuarioNoEncontradoError(id_gerente)
         if gerente.rol != Rol.GERENTE:
             raise PermisoDenegadoError("Acceso denegado: Se requiere rol de Gerente")
 
-        if any(este_usuario.nombre_usuario.lower() == nombre_usuario.lower() for este_usuario in usuarios):
-            raise UsuarioYaExisteError(nombre_usuario)
+        if any(este_usuario.nombre_usuario.lower() == nombre_nuevo_usuario.lower() for este_usuario in usuarios):
+            raise UsuarioYaExisteError(nombre_nuevo_usuario)
         
-        nuevo_id: int = max([este_usuario.id for este_usuario in usuarios], default=0) + 1
-        nuevo_usuario: Usuario = Usuario(id=nuevo_id, nombre_usuario=nombre_usuario, rol=rol)
+        nuevo_id: int = max([este_usuario.usuario_id for este_usuario in usuarios], default=0) + 1
+        nuevo_usuario: Usuario = Usuario(usuario_id=nuevo_id, nombre_usuario=nombre_nuevo_usuario, rol=rol_nuevo_usuario)
         
         usuarios.append(nuevo_usuario)
         self.storage_usuarios.save(usuarios)
@@ -208,7 +208,7 @@ class TiendaService:
             raise IdProductoInvalidoError(id_producto)
         
         usuarios: list[Usuario] = self.obtener_usuarios()
-        gerente: Usuario = next((este_usuario for este_usuario in usuarios if este_usuario.id == id_gerente), None)
+        gerente: Usuario = next((este_usuario for este_usuario in usuarios if este_usuario.usuario_id == id_gerente), None)
 
         if not gerente:
             raise UsuarioNoEncontradoError(id_gerente)
@@ -216,7 +216,7 @@ class TiendaService:
             raise PermisoDenegadoError("Acceso denegado: Se requiere rol de Gerente")
 
         productos: list[Producto] = self.obtener_productos()
-        producto_a_eliminar: Producto = next((este_producto for este_producto in productos if este_producto.id == id_producto), None)
+        producto_a_eliminar: Producto = next((este_producto for este_producto in productos if este_producto.producto_id == id_producto), None)
 
         if not producto_a_eliminar:
             raise ProductoNoEncontradoError(id_producto)
@@ -237,14 +237,14 @@ class TiendaService:
             raise IdUsuarioInvalidoError(id_usuario)
         
         usuarios: list[Usuario] = self.obtener_usuarios()
-        gerente: Usuario = next((este_usuario for este_usuario in usuarios if este_usuario.id == id_gerente), None)
+        gerente: Usuario = next((este_usuario for este_usuario in usuarios if este_usuario.usuario_id == id_gerente), None)
 
         if not gerente:
             raise UsuarioNoEncontradoError(id_gerente)
         if gerente.rol != Rol.GERENTE:
             raise PermisoDenegadoError("Acceso denegado: Se requiere rol de Gerente")
 
-        usuario_a_eliminar: Usuario = next((este_usuario for este_usuario in usuarios if este_usuario.id == id_usuario), None)
+        usuario_a_eliminar: Usuario = next((este_usuario for este_usuario in usuarios if este_usuario.usuario_id == id_usuario), None)
 
         if not usuario_a_eliminar:
             raise UsuarioNoEncontradoError(id_usuario)
@@ -257,13 +257,14 @@ class TiendaService:
         Muestra el contenido del carrito de un usuario en forma de tabla usando Rich.
         Valida: Si el carrito está vacío.
         """
+        
         console: Console = Console()
         
         if not usuario.carrito.items:
             console.print("[yellow]El carrito está vacío[/yellow]")
             return
         
-        table: Table = Table(title=f"Carrito de {usuario.nombre_usuario}", show_header=True, header_style="bold magenta")
+        table: Table = Table(title=f"Carrito de {usuario.nombre_usuario}", show_header=True, header_style="bold magenta") # show_header=True muestra el encabezado de la tabla y header_style le da estilo al encabezado
         table.add_column("ID Producto", style="cyan", width=12)
         table.add_column("Nombre", style="green", width=20)
         table.add_column("Precio Unitario", style="yellow", width=15)
@@ -275,7 +276,7 @@ class TiendaService:
             subtotal: float = item.precio_unitario * item.cantidad
             total_carrito += subtotal
             table.add_row(
-                str(item.id_producto),
+                str(item.producto_id),
                 item.nombre,
                 f"${item.precio_unitario:.2f}", #El :.2f es para formatear el número a 2 decimales y si hay más de 2 decimales, los redondea.
                 str(item.cantidad),
@@ -284,19 +285,20 @@ class TiendaService:
         
         console.print(table)
         console.print(f"\n[bold green]Total del carrito: ${total_carrito:.2f}[/bold green]")
-        
+    
     def mostrar_usuarios(self, id_gerente: int) -> None:
         """
         Muestra todos los usuarios del sistema en forma de tabla. 
         Valida: el id del gerente y permiso de usuario (solo gerentes pueden ejecutarla).
         """
+        
         console: Console = Console()
         usuarios: list[Usuario] = self.obtener_usuarios()
         
         if id_gerente <= 0:
             raise IdUsuarioInvalidoError(id_gerente)
         
-        gerente: Usuario = next((u for u in usuarios if u.id == id_gerente), None)
+        gerente: Usuario = next((este_usuario for este_usuario in usuarios if este_usuario.usuario_id == id_gerente), None)
         if not gerente:
             raise UsuarioNoEncontradoError(id_gerente)
         if gerente.rol != Rol.GERENTE:
@@ -315,7 +317,7 @@ class TiendaService:
         for usuario in usuarios:
             cantidad_items: int = len(usuario.carrito.items)
             table.add_row(
-                str(usuario.id),
+                str(usuario.usuario_id),
                 usuario.nombre_usuario,
                 usuario.rol.value,
                 str(cantidad_items)
@@ -328,6 +330,7 @@ class TiendaService:
         Muestra todos los productos del inventario en forma de tabla. 
         Valida: el id del gerente y permiso de usuario (solo gerentes pueden ejecutarla).
         """
+        
         console: Console = Console()
         usuarios: list[Usuario] = self.obtener_usuarios()
         productos: list[Producto] = self.obtener_productos()
@@ -335,7 +338,7 @@ class TiendaService:
         if id_gerente <= 0:
             raise IdUsuarioInvalidoError(id_gerente)
         
-        gerente: Usuario = next((u for u in usuarios if u.id == id_gerente), None)
+        gerente: Usuario = next((este_usuario for este_usuario in usuarios if este_usuario.usuario_id == id_gerente), None)
         if not gerente:
             raise UsuarioNoEncontradoError(id_gerente)
         if gerente.rol != Rol.GERENTE:
@@ -358,7 +361,7 @@ class TiendaService:
             valor_total_inventario += valor_producto
             
             table.add_row(
-                str(producto.id),
+                str(producto.producto_id),
                 producto.nombre,
                 f"${producto.precio:.2f}",
                 str(producto.stock),
@@ -367,5 +370,4 @@ class TiendaService:
         
         console.print(table)
         console.print(f"\n[bold green]Valor Total del Inventario: ${valor_total_inventario:.2f}[/bold green]")
-    
     
