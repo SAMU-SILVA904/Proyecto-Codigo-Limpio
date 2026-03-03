@@ -41,6 +41,7 @@ class TiendaServicios:
         
         return self.storage_productos.load()
 
+
     def agregar_al_carrito(self, id_usuario: int, id_producto: int, cantidad: int) -> None:
         """
         Agrega un producto en especifico al carrito de un usuario en específico.
@@ -252,13 +253,22 @@ class TiendaServicios:
         usuarios.remove(usuario_a_eliminar)
         self.storage_usuarios.save(usuarios)
     
-    def mostrar_carrito(self, usuario: Usuario) -> None:
+    def mostrar_carrito(self, id_usuario: int) -> None:
         """
         Muestra el contenido del carrito de un usuario en forma de tabla usando Rich.
         Valida: Si el carrito está vacío.
         """
         
         console: Console = Console()
+        
+        usuarios: list[Usuario] = self.obtener_usuarios()
+        usuario: Usuario = next((este_usuario for este_usuario in usuarios if este_usuario.usuario_id == id_usuario), None)
+        
+        if id_usuario <= 0:
+            raise IdUsuarioInvalidoError(id_usuario)
+        
+        if not usuario:
+            raise UsuarioNoEncontradoError(id_usuario)
         
         if not usuario.carrito.items:
             console.print("[yellow]El carrito está vacío[/yellow]")

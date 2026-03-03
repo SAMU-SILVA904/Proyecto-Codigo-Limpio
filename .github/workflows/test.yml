@@ -19,5 +19,6 @@ jobs:
           
       - name: Run Ruff (linter)
         run: uv run ruff check 
+
       - name: Run tests
         run: uv run pytest -v
