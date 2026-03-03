@@ -1,20 +1,26 @@
 [
     {
-        "id": 101,
+        "producto_id": 101,
         "nombre": "Leche Entera",
         "precio": 4500.0,
-        "stock": 25
+        "stock": 100
     },
     {
-        "id": 102,
+        "producto_id": 102,
         "nombre": "Pan Tajado",
         "precio": 3200.0,
-        "stock": 10
+        "stock": 250
     },
     {
-        "id": 103,
+        "producto_id": 103,
         "nombre": "Arroz 1kg",
         "precio": 3800.0,
-        "stock": 50
+        "stock": 150
+    },
+    {
+        "producto_id": 104,
+        "nombre": "Panela",
+        "precio": 4000.0,
+        "stock": 200
     }
 ]
