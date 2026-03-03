@@ -1,5 +1,4 @@
 import pytest
-from rich.console import Console
 from unittest.mock import MagicMock
 from src.gerencia_app.modelos import Usuario, Rol, Producto
 from src.gerencia_app.servicios import TiendaServicios
