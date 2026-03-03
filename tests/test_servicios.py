@@ -121,7 +121,6 @@ def test_eliminar_usuario_exitoso():
     mock_almacenamiento_usuarios.save.assert_called_once()
 
 def test_mostrar_carrito_exitoso():
-    console: Console = Console()
     
     empleado = Usuario(usuario_id=2, nombre_usuario="empleado_unico", rol=Rol.EMPLEADO)
     producto = Producto(producto_id=1, nombre="Producto de prueba", precio=10.0, stock=100)
@@ -140,7 +139,6 @@ def test_mostrar_carrito_exitoso():
     servicio.mostrar_carrito(id_usuario=2)
 
 def test_mostrar_usuarios_exitoso():
-    console: Console = Console()
     
     gerente = Usuario(usuario_id=1, nombre_usuario="gerente_unico", rol=Rol.GERENTE)
     empleado = Usuario(usuario_id=2, nombre_usuario="empleado_unico", rol=Rol.EMPLEADO)
@@ -158,7 +156,6 @@ def test_mostrar_usuarios_exitoso():
     servicio.mostrar_usuarios(id_gerente=1)
 
 def test_mostrar_productos_exitoso():
-    console: Console = Console()
     
     gerente = Usuario(usuario_id=1, nombre_usuario="gerente_unico", rol=Rol.GERENTE)
     producto = Producto(producto_id=1, nombre="Producto de prueba", precio=10.0, stock=100)
