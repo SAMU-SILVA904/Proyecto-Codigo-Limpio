@@ -105,8 +105,8 @@ class TiendaServicios:
             raise UsuarioNoEncontradoError(id_usuario)
         if usuario.rol != Rol.EMPLEADO:
             raise PermisoDenegadoError("Solo los empleados pueden facturar el carrito")
-        if not usuario.carrito.items:
-            raise CarritoVacioError("El carrito está vacío, no se puede facturar")
+        if usuario.carrito.items == []:
+            raise CarritoVacioError() # Unica exepción que no recibe parámetros porque el mensaje de error es fijo ya que solo se da en un unico caso.
 
         for item in usuario.carrito.items:
             producto_en_inventario: Producto = next((este_producto for este_producto in productos if este_producto.producto_id == item.producto_id), None)
