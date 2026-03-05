@@ -10,3 +10,9 @@ dependencies = [
     "ruff>=0.15.4",
     "typer>=0.24.1",
 ]
+
+[dependency-groups]
+dev = [
+    "mkdocs-material>=9.7.4",
+    "mkdocstrings[python]>=1.0.3",
+]
