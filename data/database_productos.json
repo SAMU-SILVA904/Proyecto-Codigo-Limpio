@@ -22,5 +22,11 @@
         "nombre": "Panela",
         "precio": 4000.0,
         "stock": 200
+    },
+    {
+        "producto_id": 105,
+        "nombre": "PRoducto_prueba1",
+        "precio": 2000.0,
+        "stock": 10
     }
 ]
