@@ -1,7 +1,7 @@
 import pytest
 from unittest.mock import MagicMock
 
-from src.gerencia_app.modelos import Usuario, Rol, Producto
+from gerencia_app.modelos.rol import Usuario, Rol, Producto
 from src.gerencia_app.servicios import TiendaServicios
 
 from src.gerencia_app.exepciones import (

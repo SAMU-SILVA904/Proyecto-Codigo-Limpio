@@ -3,7 +3,7 @@ from pathlib import Path
 from typing import List, Type, TypeVar
 from dataclasses import asdict
 
-from .modelos import Usuario, Rol, Carrito, ItemCarrito
+from .modelos.rol import Usuario, Rol, Carrito, ItemCarrito
 
 variable_universal = TypeVar("Variable_universal")
 """

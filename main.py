@@ -3,7 +3,7 @@ from pathlib import Path
 from rich.console import Console
 
 from src.gerencia_app.almacenamiento import JSONStorage
-from src.gerencia_app.modelos import Usuario, Producto, Rol
+from gerencia_app.modelos.rol import Usuario, Producto, Rol
 from src.gerencia_app.servicios import TiendaServicios
 
 from src.gerencia_app.exepciones import TiendaError

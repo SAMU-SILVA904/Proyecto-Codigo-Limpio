@@ -2,7 +2,7 @@ from rich.table import Table
 from rich.console import Console
 from typing import List
 
-from .modelos import Usuario, Producto, Rol, ItemCarrito
+from .modelos.rol import Usuario, Producto, Rol, ItemCarrito
 from .almacenamiento import JSONStorage
 
 from .exepciones import (
@@ -50,14 +50,9 @@ class TiendaServicios:
         Valida: El id del usuario, el id del producto, los permisos (solo empleados pueden usar el carrito) y stock.
         """
         
-        if cantidad <= 0:
-            raise CantidadInvalidaError(cantidad)
         
         if id_usuario <= 0:
             raise IdUsuarioInvalidoError(id_usuario)
-        
-        if id_producto <= 0:
-            raise IdProductoInvalidoError(id_producto)
         
         usuarios: list[Usuario] = self.obtener_usuarios()
         productos: list[Producto] = self.obtener_productos()
@@ -233,12 +228,6 @@ class TiendaServicios:
         
         if id_gerente <= 0:
             raise IdUsuarioInvalidoError(id_gerente)
-        
-        if not nombre_nuevo_usuario.strip():
-            raise NombreUsuarioInvalidoError(nombre_nuevo_usuario)
-        
-        if rol_nuevo_usuario not in [Rol.GERENTE, Rol.EMPLEADO]:
-            raise PermisoDenegadoError("El rol especificado no es válido. Debe ser 'gerente' o 'empleado'.")
         
         usuarios: list[Usuario] = self.obtener_usuarios()
         gerente: Usuario = next((este_usuario for este_usuario in usuarios if este_usuario.usuario_id == id_gerente), None)
