@@ -23,5 +23,5 @@ jobs:
       - name: Run tests
         run: uv run pytest -v
 
-      - name: Chequear Calidad de Codigo:
+      - name: Chequear Calidad de Codigo
         run: uv run randon cc src -a
