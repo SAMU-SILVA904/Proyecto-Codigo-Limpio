@@ -2,18 +2,9 @@ from dataclasses import dataclass, field
 from .rol import Rol
 from .carrito import Carrito
 from src.gerencia_app.exepciones import (
-    CantidadInvalidaError,
     IdUsuarioInvalidoError,
-    UsuarioNoEncontradoError,
     PermisoDenegadoError,
-    UsuarioYaExisteError,
     NombreUsuarioInvalidoError,
-    ProductoNoEncontradoError,
-    ProductoYaExisteError,
-    NombreProductoInvalidoError,
-    IdProductoInvalidoError,
-    CarritoVacioError,
-    StockInsuficienteError
 )
 
 @dataclass

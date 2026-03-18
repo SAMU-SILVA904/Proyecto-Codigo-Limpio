@@ -7,7 +7,3 @@ class Rol(Enum):
     
     GERENTE = "gerente"
     EMPLEADO = "empleado"
-
-
-
-

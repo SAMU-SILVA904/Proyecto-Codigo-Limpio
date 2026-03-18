@@ -1,4 +1,9 @@
 from dataclasses import dataclass, field
+from src.gerencia_app.exepciones import (
+    CantidadInvalidaError,
+    NombreProductoInvalidoError,
+    IdProductoInvalidoError
+)
 
 @dataclass
 class Producto:

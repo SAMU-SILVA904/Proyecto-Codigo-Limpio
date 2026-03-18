@@ -1,17 +1,8 @@
 from dataclasses import dataclass, field
 from src.gerencia_app.exepciones import (
     CantidadInvalidaError,
-    IdUsuarioInvalidoError,
-    UsuarioNoEncontradoError,
-    PermisoDenegadoError,
-    UsuarioYaExisteError,
-    NombreUsuarioInvalidoError,
-    ProductoNoEncontradoError,
-    ProductoYaExisteError,
     NombreProductoInvalidoError,
-    IdProductoInvalidoError,
-    CarritoVacioError,
-    StockInsuficienteError
+    IdProductoInvalidoError
 )
 
 
