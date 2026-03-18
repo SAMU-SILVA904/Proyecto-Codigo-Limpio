@@ -2,7 +2,7 @@ from rich.table import Table
 from rich.console import Console
 from typing import List
 
-from .modelos.rol import Usuario, Producto, Rol, ItemCarrito
+from .modelos.rol import Usuario, Producto, Rol, ItemCarrito, Carrito
 from .almacenamiento import JSONStorage
 
 from .exepciones import (
@@ -14,8 +14,6 @@ from .exepciones import (
     UsuarioYaExisteError,
     ProductoYaExisteError,
     CantidadInvalidaError,
-    NombreUsuarioInvalidoError,
-    NombreProductoInvalidoError,
     IdUsuarioInvalidoError,
     IdProductoInvalidoError
 )
@@ -84,7 +82,6 @@ class TiendaServicios:
         Valida: el id del usuario, el id del producto y si el producto está en el carrito.
         """
         
-        usuario: Usuario = self.obtener_usuario_por_id(id_usuario=id_usuario)
         item_carrito: ItemCarrito = next((este_item for este_item in usuario.carrito.items if este_item.producto_id == id_producto), None)
         
         return item_carrito
@@ -186,14 +183,14 @@ class TiendaServicios:
 
         usuario_actual: Usuario = self.obtener_usuario_por_id(id_usuario=id_usuario)
         self.validar_usuario_empleado(usuario = usuario_actual)
-        self.validar_carrito_no_vacio(usuario.carrito)
+        self.validar_carrito_no_vacio(usuario_actual.carrito)
 
-        for item in usuario.carrito.items:
+        for item in usuario_actual.carrito.items:
             producto_en_inventario: Producto = self.obtener_producto_por_id(id_producto=item.producto_id)
             self.validar_stock_suficiente(cantidad_solicitada=item.cantidad, producto=producto_en_inventario)
             producto_en_inventario.stock -= item.cantidad
         
-        usuario.carrito.items = []
+        usuario_actual.carrito.items = []
 
         self.almacenamiento_productos.save(productos)
         self.almacenamiento_usuarios.save(usuarios)
@@ -287,7 +284,6 @@ class TiendaServicios:
         if id_producto <= 0:
             raise IdProductoInvalidoError(id_producto)
         
-        usuarios: list[Usuario] = self.obtener_usuarios()
         gerente: Usuario = self.obtener_usuario_por_id(id_usuario=id_gerente)
         self.validar_usuario_gerente(self, usuario = gerente)
 
@@ -384,11 +380,10 @@ class TiendaServicios:
         """
         
         console: Console = Console()
-        usuarios: list[Usuario] = self.obtener_usuarios()
-        productos: list[Producto] = self.obtener_productos()
         
         gerente: Usuario = self.obtener_usuario_por_id(id_usuario=id_gerente)
         self.validar_usuario_gerente(self, usuario = gerente)
+        
         productos: Producto = self.obtener_productos()
         self.validar_lista_productos_no_vacia(productos=productos)
         

@@ -1,7 +1,7 @@
 import streamlit as st
 from pathlib import Path
 from gerencia_app.modelos.rol import Usuario, Producto
-from src.gerencia_app.servicios import TiendaServicios
+"""from src.gerencia_app.servicios import TiendaServicios"""
 from src.gerencia_app.almacenamiento import JSONStorage
 
 almacenamiento_usuarios = JSONStorage(base_a_guardar=Path("data/database_usuarios.json"), modelo_clase=Usuario)
