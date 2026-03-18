@@ -1,7 +1,12 @@
 import pytest
 from unittest.mock import MagicMock
 
-from gerencia_app.modelos.rol import Usuario, Rol, Producto
+from src.gerencia_app.modelos.usuario import Usuario
+from src.gerencia_app.modelos.rol import Rol
+from src.gerencia_app.modelos.producto import Producto
+from src.gerencia_app.modelos.carrito import Carrito
+from src.gerencia_app.modelos.item_carrito import ItemCarrito
+
 from src.gerencia_app.servicios import TiendaServicios
 
 from src.gerencia_app.exepciones import (
@@ -451,7 +456,7 @@ def test_id_producto_invalido():
     Prueba que agregar un producto al carrito con un ID de producto negativo lance una excepción de IdProductoInvalidoError, y que no se guarden cambios en el almacenamiento.
     """
     
-    gerente = Usuario(usuario_id=1, nombre_usuario="gerente_unico", rol=Rol.GERENTE)
+    gerente = Usuario(usuario_id=1, nombre_usuario="empleado_unico", rol=Rol.EMPLEADO)
 
     mock_almacenamiento_usuarios = MagicMock()
     mock_almacenamiento_usuarios.load.return_value = [gerente]

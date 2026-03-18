@@ -24,7 +24,7 @@ class Usuario:
         """
         if self.usuario_id <= 0:
             raise IdUsuarioInvalidoError(self.usuario_id)
-        if self.nombre_usuario.strip():
+        if not self.nombre_usuario.strip():
             raise NombreUsuarioInvalidoError(self.nombre_usuario)
         if self.rol not in [Rol.GERENTE, Rol.EMPLEADO]:
             raise PermisoDenegadoError("El rol especificado no es válido. Debe ser 'gerente' o 'empleado'.")

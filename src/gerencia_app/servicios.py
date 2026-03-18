@@ -2,10 +2,14 @@ from rich.table import Table
 from rich.console import Console
 from typing import List
 
-from .modelos.rol import Usuario, Producto, Rol, ItemCarrito, Carrito
+from src.gerencia_app.modelos.usuario import Usuario
+from src.gerencia_app.modelos.rol import Rol
+from src.gerencia_app.modelos.producto import Producto
+from src.gerencia_app.modelos.carrito import Carrito
+from src.gerencia_app.modelos.item_carrito import ItemCarrito
 from .almacenamiento import JSONStorage
 
-from .exepciones import (
+from src.gerencia_app.exepciones import (
     StockInsuficienteError, 
     PermisoDenegadoError, 
     UsuarioNoEncontradoError,
@@ -113,12 +117,11 @@ class TiendaServicios:
         if producto.stock < cantidad_solicitada:
             raise StockInsuficienteError(producto.producto_id, producto.stock) 
 
-    def validar_carrito_no_vacio(carrito: Carrito) -> None:
+    def validar_carrito_no_vacio(self, lista: list[ItemCarrito]) -> None:
         """
-        Valida que el carrito no esté vacío antes de facturar.
-        Valida: si el carrito tiene items o no.
+        Valida que el carrito no esté vacío.
         """
-        if not carrito.items:
+        if not lista:
             raise CarritoVacioError() # Unica exepción que no recibe parámetros porque el mensaje de error es fijo ya que solo se da en un unico caso.
 
     def validar_lista_usuarios_no_vacia(self, usuarios: List[Usuario]) -> None:
@@ -148,6 +151,8 @@ class TiendaServicios:
         Agrega un producto en especifico al carrito de un usuario en específico.
         Valida: Los permisos (solo empleados pueden usar el carrito) y stock.
         """
+        
+        self.validar_cantidad_valida(cantidad=cantidad)
         
         usuarios: list[Usuario] = self.obtener_usuarios()
         
@@ -183,7 +188,7 @@ class TiendaServicios:
 
         usuario_actual: Usuario = self.obtener_usuario_por_id(id_usuario=id_usuario)
         self.validar_usuario_empleado(usuario = usuario_actual)
-        self.validar_carrito_no_vacio(usuario_actual.carrito)
+        self.validar_carrito_no_vacio(lista = usuario_actual.carrito.items)
 
         for item in usuario_actual.carrito.items:
             producto_en_inventario: Producto = self.obtener_producto_por_id(id_producto=item.producto_id)
@@ -220,7 +225,7 @@ class TiendaServicios:
         productos: list[Producto] = self.obtener_productos()
         
         gerente: Usuario = self.obtener_usuario_por_id(id_usuario=id_gerente)
-        self.validar_usuario_gerente(self, usuario = gerente)
+        self.validar_usuario_gerente(usuario = gerente)
 
         producto_a_actualizar: Producto = self.obtener_producto_por_id(id_producto=id_producto)
         self.validar_cantidad_valida(cantidad_a_agregar)
@@ -238,7 +243,7 @@ class TiendaServicios:
         
         
         gerente: Usuario = self.obtener_usuario_por_id(id_usuario=id_gerente)
-        self.validar_usuario_gerente(self, usuario = gerente)
+        self.validar_usuario_gerente(usuario = gerente)
         
         productos: list[Producto] = self.obtener_productos()
         
@@ -261,7 +266,7 @@ class TiendaServicios:
         usuarios: list[Usuario] = self.obtener_usuarios()
         
         gerente: Usuario = self.obtener_usuario_por_id(id_usuario=id_gerente)
-        self.validar_usuario_gerente(self, usuario = gerente)
+        self.validar_usuario_gerente(usuario = gerente)
 
         if any(este_usuario.nombre_usuario.lower() == nombre_nuevo_usuario.lower() for este_usuario in usuarios):
             raise UsuarioYaExisteError(nombre_nuevo_usuario)
@@ -285,7 +290,7 @@ class TiendaServicios:
             raise IdProductoInvalidoError(id_producto)
         
         gerente: Usuario = self.obtener_usuario_por_id(id_usuario=id_gerente)
-        self.validar_usuario_gerente(self, usuario = gerente)
+        self.validar_usuario_gerente(usuario = gerente)
 
         productos: list[Producto] = self.obtener_productos()
         producto_a_eliminar: Producto =self.obtener_producto_por_id(id_producto=id_producto)
@@ -301,7 +306,7 @@ class TiendaServicios:
         
         usuarios: list[Usuario] = self.obtener_usuarios()
         gerente: Usuario = self.obtener_usuario_por_id(id_usuario=id_gerente)
-        self.validar_usuario_gerente(self, usuario = gerente)
+        self.validar_usuario_gerente(usuario = gerente)
         
 
         usuario_a_eliminar: Usuario = self.obtener_usuario_por_id(id_usuario=id_usuario)
@@ -318,7 +323,7 @@ class TiendaServicios:
         console: Console = Console()
         
         usuario: Usuario = self.obtener_usuario_por_id(id_usuario=id_usuario)
-        self.validar_carrito_no_vacio(usuario.carrito)
+        self.validar_carrito_no_vacio(usuario.carrito.items)
         
         tabla_carrito: Table = Table(title=f"Carrito de {usuario.nombre_usuario}", show_header=True, header_style="orange1") # show_header=True muestra el encabezado de la tabla y header_style le da estilo al encabezado
         tabla_carrito.add_column("ID Producto", style="cyan", width=12)
@@ -353,7 +358,7 @@ class TiendaServicios:
         self.validar_lista_usuarios_no_vacia(usuarios=usuarios)
         
         gerente: Usuario = self.obtener_usuario_por_id(id_usuario=id_gerente)
-        self.validar_usuario_gerente(self, usuario = gerente)
+        self.validar_usuario_gerente(usuario = gerente)
         
         table: Table = Table(title="Lista de Usuarios", show_header=True, header_style="bold magenta")
         table.add_column("ID", style="cyan", width=8)
@@ -381,7 +386,7 @@ class TiendaServicios:
         console: Console = Console()
         
         gerente: Usuario = self.obtener_usuario_por_id(id_usuario=id_gerente)
-        self.validar_usuario_gerente(self, usuario = gerente)
+        self.validar_usuario_gerente(usuario = gerente)
         
         productos: Producto = self.obtener_productos()
         self.validar_lista_productos_no_vacia(productos=productos)
