@@ -317,7 +317,6 @@ class TiendaServicios:
         
         console: Console = Console()
         
-        usuarios: list[Usuario] = self.obtener_usuarios()
         usuario: Usuario = self.obtener_usuario_por_id(id_usuario=id_usuario)
         self.validar_carrito_no_vacio(usuario.carrito)
         
