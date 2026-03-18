@@ -44,33 +44,123 @@ class TiendaServicios:
         return self.almacenamiento_productos.load()
 
 
-    def agregar_al_carrito(self, id_usuario: int, id_producto: int, cantidad: int) -> None:
+    def obtener_usuario_por_id(self, id_usuario: int) -> Usuario:
         """
-        Agrega un producto en especifico al carrito de un usuario en específico.
-        Valida: El id del usuario, el id del producto, los permisos (solo empleados pueden usar el carrito) y stock.
+        Trae y devuelve un usuario específico según su ID.
+        Valida: el id del usuario.
         """
-        
         
         if id_usuario <= 0:
             raise IdUsuarioInvalidoError(id_usuario)
         
         usuarios: list[Usuario] = self.obtener_usuarios()
-        productos: list[Producto] = self.obtener_productos()
+        usuario: Usuario = next((este_usuario for este_usuario in usuarios if este_usuario.usuario_id == id_usuario), None)
         
-        usuario: Usuario = next((este_usuario for este_usuario in usuarios if este_usuario.usuario_id == id_usuario), None) #Next devuelve el primer elemento que cumple la condición o None si no encuentra nada
         if not usuario:
             raise UsuarioNoEncontradoError(id_usuario)
-        if usuario.rol != Rol.EMPLEADO:
-            raise PermisoDenegadoError("Solo los empleados pueden usar el carrito")
         
+        return usuario
+
+    def obtener_producto_por_id(self, id_producto: int) -> Producto:
+        """
+        Trae y devuelve un producto específico según su ID.
+        Valida: el id del producto.
+        """
+        
+        if id_producto <= 0:
+            raise IdProductoInvalidoError(id_producto)
+        
+        productos: list[Producto] = self.obtener_productos()
         producto: Producto = next((este_producto for este_producto in productos if este_producto.producto_id == id_producto), None)
+        
         if not producto:
             raise ProductoNoEncontradoError(id_producto)
         
-        if producto.stock < cantidad:
-            raise StockInsuficienteError(id_producto, producto.stock)
+        return producto
+
+    def obtener_item_carrito_por_id(self, usuario: Usuario, id_producto: int) -> ItemCarrito:
+        """
+        Trae y devuelve un item específico del carrito de un usuario según el ID del producto.
+        Valida: el id del usuario, el id del producto y si el producto está en el carrito.
+        """
         
-        item_existente: ItemCarrito = next((este_item for este_item in usuario.carrito.items if este_item.producto_id == id_producto),None)
+        usuario: Usuario = self.obtener_usuario_por_id(id_usuario=id_usuario)
+        item_carrito: ItemCarrito = next((este_item for este_item in usuario.carrito.items if este_item.producto_id == id_producto), None)
+        
+        return item_carrito
+
+
+    def validar_usuario_gerente(self, usuario: Usuario) -> None:
+        """
+        Valida que un usuario específico tenga rol de gerente.
+        """
+        
+        if usuario.rol != Rol.GERENTE:
+            raise PermisoDenegadoError("Acceso denegado: Se requiere rol de Gerente")
+
+    def validar_usuario_empleado(self, usuario: Usuario) -> None:
+        """
+        Valida que un usuario específico tenga rol de empleado.
+        Valida: el id del usuario y su rol.
+        """
+        
+        if usuario.rol != Rol.EMPLEADO:
+            raise PermisoDenegadoError("Acceso denegado: Se requiere rol de Empleado")
+
+    def validar_stock_suficiente(self, cantidad_solicitada: int, producto: Producto) -> None:
+        """
+        Valida que la cantidad solicitada de un producto no supere el stock disponible.
+        Valida: la cantidad solicitada y el stock disponible.
+        """
+        
+        if producto.stock < cantidad_solicitada:
+            raise StockInsuficienteError(producto.producto_id, producto.stock) 
+
+    def validar_carrito_no_vacio(carrito: Carrito) -> None:
+        """
+        Valida que el carrito no esté vacío antes de facturar.
+        Valida: si el carrito tiene items o no.
+        """
+        if not carrito.items:
+            raise CarritoVacioError() # Unica exepción que no recibe parámetros porque el mensaje de error es fijo ya que solo se da en un unico caso.
+
+    def validar_lista_usuarios_no_vacia(self, usuarios: List[Usuario]) -> None:
+        """
+        Valida que la lista de usuarios no esté vacía antes de mostrarla.
+        """
+        if not usuarios:
+            raise UsuarioNoEncontradoError("No hay usuarios en el sistema")
+
+    def validar_lista_productos_no_vacia(self, productos: List[Producto]) -> None:
+        """
+        Valida que la lista de productos no esté vacía antes de mostrarla.
+        """
+        if not productos:
+            raise ProductoNoEncontradoError("No hay productos en el inventario")
+
+    def validar_cantidad_valida(self, cantidad: int) -> None:
+        """
+        Valida que la cantidad ingresada sea un número entero positivo.
+        """
+        if cantidad <= 0:
+            raise CantidadInvalidaError(cantidad)
+
+
+    def agregar_al_carrito(self, id_usuario: int, id_producto: int, cantidad: int) -> None:
+        """
+        Agrega un producto en especifico al carrito de un usuario en específico.
+        Valida: Los permisos (solo empleados pueden usar el carrito) y stock.
+        """
+        
+        usuarios: list[Usuario] = self.obtener_usuarios()
+        
+        usuario_actual: Usuario = self.obtener_usuario_por_id(id_usuario=id_usuario)
+        self.validar_usuario_empleado(usuario = usuario_actual)
+        
+        producto: Producto = self.obtener_producto_por_id(id_producto=id_producto)
+        self.validar_stock_suficiente(cantidad_solicitada=cantidad, producto=producto)
+        
+        item_existente: ItemCarrito = self.obtener_item_carrito_por_id(usuario=usuario_actual, id_producto=id_producto)
         
         if item_existente:
             item_existente.cantidad += cantidad
@@ -81,7 +171,7 @@ class TiendaServicios:
                 precio_unitario=producto.precio,
                 cantidad=cantidad
             )
-            usuario.carrito.items.append(nuevo_item)
+            usuario_actual.carrito.items.append(nuevo_item)
         
         self.almacenamiento_usuarios.save(usuarios)
 
@@ -91,33 +181,18 @@ class TiendaServicios:
         Valida: el id del usuario, el stock y permiso de usuario (solo empleados pueden facturar).
         """
         
-        if id_usuario <= 0:
-            raise IdUsuarioInvalidoError(id_usuario)
-        
         usuarios: list[Usuario] = self.obtener_usuarios()
         productos: list[Producto] = self.obtener_productos()
 
-        usuario: Usuario = next((este_usuario for este_usuario in usuarios if este_usuario.usuario_id == id_usuario), None)
-        if not usuario:
-            raise UsuarioNoEncontradoError(id_usuario)
-        if usuario.rol != Rol.EMPLEADO:
-            raise PermisoDenegadoError("Solo los empleados pueden facturar el carrito")
-        if usuario.carrito.items == []:
-            raise CarritoVacioError() # Unica exepción que no recibe parámetros porque el mensaje de error es fijo ya que solo se da en un unico caso.
+        usuario_actual: Usuario = self.obtener_usuario_por_id(id_usuario=id_usuario)
+        self.validar_usuario_empleado(usuario = usuario_actual)
+        self.validar_carrito_no_vacio(usuario.carrito)
 
         for item in usuario.carrito.items:
-            producto_en_inventario: Producto = next((este_producto for este_producto in productos if este_producto.producto_id == item.producto_id), None)
-            if not producto_en_inventario:
-                raise ProductoNoEncontradoError(item.producto_id)
-            if producto_en_inventario.stock < item.cantidad:
-                raise StockInsuficienteError(item.producto_id, producto_en_inventario.stock if producto_en_inventario else 0)
-            
-        for item in usuario.carrito.items:
-            producto_en_inventario: Producto = next((este_producto for este_producto in productos if este_producto.producto_id == item.producto_id), None)
-            if not producto_en_inventario:
-                raise ProductoNoEncontradoError(item.producto_id)
+            producto_en_inventario: Producto = self.obtener_producto_por_id(id_producto=item.producto_id)
+            self.validar_stock_suficiente(cantidad_solicitada=item.cantidad, producto=producto_en_inventario)
             producto_en_inventario.stock -= item.cantidad
-
+        
         usuario.carrito.items = []
 
         self.almacenamiento_productos.save(productos)
@@ -128,26 +203,15 @@ class TiendaServicios:
         Elimina un producto específico del carrito de un usuario.
         Valida: el id del usuario, el id del producto, el permiso de usuario (solo empleados pueden usar el carrito) y si el producto está en el carrito.
         """
-        if id_usuario <= 0:
-            raise IdUsuarioInvalidoError(id_usuario)
-        
-        if id_producto <= 0:
-            raise IdProductoInvalidoError(id_producto)
-        
+
         usuarios: list[Usuario] = self.obtener_usuarios()
-        usuario: Usuario = next((este_usuario for este_usuario in usuarios if este_usuario.usuario_id == id_usuario), None)
+        usuario_actual: Usuario = self.obtener_usuario_por_id(id_usuario=id_usuario)
+        self.validar_usuario_empleado(usuario = usuario_actual)
         
-        if not usuario:
-            raise UsuarioNoEncontradoError(id_usuario)
-        if usuario.rol != Rol.EMPLEADO:
-            raise PermisoDenegadoError("Solo los empleados pueden usar el carrito")
         
-        item_a_eliminar: ItemCarrito = next((este_item for este_item in usuario.carrito.items if este_item.producto_id == id_producto), None)
+        item_a_eliminar: ItemCarrito = self.obtener_item_carrito_por_id(usuario=usuario_actual, id_producto=id_producto)
         
-        if not item_a_eliminar:
-            raise ProductoNoEncontradoError(id_producto)
-        
-        usuario.carrito.items.remove(item_a_eliminar)
+        usuario_actual.carrito.items.remove(item_a_eliminar)
         self.almacenamiento_usuarios.save(usuarios)
 
     def agregar_stock_producto(self, id_gerente: int, id_producto: int, cantidad_a_agregar: int) -> None:
@@ -156,28 +220,13 @@ class TiendaServicios:
         Valida: el id del gerente, el id del producto, la cantidad a agregar y permiso de usuario (solo gerentes pueden ejecutar esta acción).
         """
         
-        if id_gerente <= 0:
-            raise IdUsuarioInvalidoError(id_gerente)
-        
-        if id_producto <= 0:
-            raise IdProductoInvalidoError(id_producto)
-        
-        if cantidad_a_agregar <= 0:
-            raise CantidadInvalidaError(cantidad_a_agregar)
-        
-        usuarios: list[Usuario] = self.obtener_usuarios()
-        gerente: Usuario = next((este_usuario for este_usuario in usuarios if este_usuario.usuario_id == id_gerente), None)
-
-        if not gerente:
-            raise UsuarioNoEncontradoError(id_gerente)
-        if gerente.rol != Rol.GERENTE:
-            raise PermisoDenegadoError("Acceso denegado: Se requiere rol de Gerente")
-
         productos: list[Producto] = self.obtener_productos()
-        producto_a_actualizar: Producto = next((este_producto for este_producto in productos if este_producto.producto_id == id_producto), None)
+        
+        gerente: Usuario = self.obtener_usuario_por_id(id_usuario=id_gerente)
+        self.validar_usuario_gerente(self, usuario = gerente)
 
-        if not producto_a_actualizar:
-            raise ProductoNoEncontradoError(id_producto)
+        producto_a_actualizar: Producto = self.obtener_producto_por_id(id_producto=id_producto)
+        self.validar_cantidad_valida(cantidad_a_agregar)
 
         producto_a_actualizar.stock += cantidad_a_agregar
         self.almacenamiento_productos.save(productos)
@@ -188,25 +237,11 @@ class TiendaServicios:
         Valida: el id del gerente, nombre, precio, stock y permiso de usuario (solo gerentes pueden ejecutarla).
         """
         
-        if id_gerente <= 0:
-            raise IdUsuarioInvalidoError(id_gerente)
+        productos: list[Producto] = self.obtener_productos()
         
-        if not nombre_nuevo_producto.strip():
-            raise NombreProductoInvalidoError(nombre_nuevo_producto)
         
-        if precio_nuevo_producto <= 0:
-            raise CantidadInvalidaError(precio_nuevo_producto)
-        
-        if stock_nuevo_producto < 0:
-            raise CantidadInvalidaError(stock_nuevo_producto)
-        
-        usuarios: list[Usuario] = self.obtener_usuarios()
-        gerente: Usuario = next((este_usuario for este_usuario in usuarios if este_usuario.usuario_id == id_gerente), None)
-
-        if not gerente:
-            raise UsuarioNoEncontradoError(id_gerente)
-        if gerente.rol != Rol.GERENTE:
-            raise PermisoDenegadoError("Acceso denegado: Se requiere rol de Gerente")
+        gerente: Usuario = self.obtener_usuario_por_id(id_usuario=id_gerente)
+        self.validar_usuario_gerente(self, usuario = gerente)
         
         productos: list[Producto] = self.obtener_productos()
         
@@ -219,23 +254,17 @@ class TiendaServicios:
         
         productos.append(nuevo_producto)
         self.almacenamiento_productos.save(productos)
-    
+
     def crear_usuario(self, id_gerente: int, nombre_nuevo_usuario: str, rol_nuevo_usuario: Rol) -> None:
         """
         Crea un nuevo usuario.
         Valida: el id del gerente, nombre de usuario, rol y permiso de usuario (solo gerentes pueden ejecutarla).
         """
         
-        if id_gerente <= 0:
-            raise IdUsuarioInvalidoError(id_gerente)
-        
         usuarios: list[Usuario] = self.obtener_usuarios()
-        gerente: Usuario = next((este_usuario for este_usuario in usuarios if este_usuario.usuario_id == id_gerente), None)
-
-        if not gerente:
-            raise UsuarioNoEncontradoError(id_gerente)
-        if gerente.rol != Rol.GERENTE:
-            raise PermisoDenegadoError("Acceso denegado: Se requiere rol de Gerente")
+        
+        gerente: Usuario = self.obtener_usuario_por_id(id_usuario=id_gerente)
+        self.validar_usuario_gerente(self, usuario = gerente)
 
         if any(este_usuario.nombre_usuario.lower() == nombre_nuevo_usuario.lower() for este_usuario in usuarios):
             raise UsuarioYaExisteError(nombre_nuevo_usuario)
@@ -245,7 +274,7 @@ class TiendaServicios:
         
         usuarios.append(nuevo_usuario)
         self.almacenamiento_usuarios.save(usuarios)
-    
+
     def eliminar_producto(self, id_gerente: int, id_producto: int) -> None:
         """
         Elimina un producto del inventario.
@@ -259,19 +288,12 @@ class TiendaServicios:
             raise IdProductoInvalidoError(id_producto)
         
         usuarios: list[Usuario] = self.obtener_usuarios()
-        gerente: Usuario = next((este_usuario for este_usuario in usuarios if este_usuario.usuario_id == id_gerente), None)
-
-        if not gerente:
-            raise UsuarioNoEncontradoError(id_gerente)
-        if gerente.rol != Rol.GERENTE:
-            raise PermisoDenegadoError("Acceso denegado: Se requiere rol de Gerente")
+        gerente: Usuario = self.obtener_usuario_por_id(id_usuario=id_gerente)
+        self.validar_usuario_gerente(self, usuario = gerente)
 
         productos: list[Producto] = self.obtener_productos()
-        producto_a_eliminar: Producto = next((este_producto for este_producto in productos if este_producto.producto_id == id_producto), None)
-
-        if not producto_a_eliminar:
-            raise ProductoNoEncontradoError(id_producto)
-
+        producto_a_eliminar: Producto =self.obtener_producto_por_id(id_producto=id_producto)
+        
         productos.remove(producto_a_eliminar)
         self.almacenamiento_productos.save(productos)
 
@@ -281,25 +303,13 @@ class TiendaServicios:
         Valida: el id del gerente, el id del usuario y permiso de usuario (solo gerentes pueden ejecutar esta acción).
         """
         
-        if id_gerente <= 0:
-            raise IdUsuarioInvalidoError(id_gerente)
-        
-        if id_usuario <= 0:
-            raise IdUsuarioInvalidoError(id_usuario)
-        
         usuarios: list[Usuario] = self.obtener_usuarios()
-        gerente: Usuario = next((este_usuario for este_usuario in usuarios if este_usuario.usuario_id == id_gerente), None)
+        gerente: Usuario = self.obtener_usuario_por_id(id_usuario=id_gerente)
+        self.validar_usuario_gerente(self, usuario = gerente)
+        
 
-        if not gerente:
-            raise UsuarioNoEncontradoError(id_gerente)
-        if gerente.rol != Rol.GERENTE:
-            raise PermisoDenegadoError("Acceso denegado: Se requiere rol de Gerente")
-
-        usuario_a_eliminar: Usuario = next((este_usuario for este_usuario in usuarios if este_usuario.usuario_id == id_usuario), None)
-
-        if not usuario_a_eliminar:
-            raise UsuarioNoEncontradoError(id_usuario)
-
+        usuario_a_eliminar: Usuario = self.obtener_usuario_por_id(id_usuario=id_usuario)
+        
         usuarios.remove(usuario_a_eliminar)
         self.almacenamiento_usuarios.save(usuarios)
 
@@ -312,17 +322,8 @@ class TiendaServicios:
         console: Console = Console()
         
         usuarios: list[Usuario] = self.obtener_usuarios()
-        usuario: Usuario = next((este_usuario for este_usuario in usuarios if este_usuario.usuario_id == id_usuario), None)
-        
-        if id_usuario <= 0:
-            raise IdUsuarioInvalidoError(id_usuario)
-        
-        if not usuario:
-            raise UsuarioNoEncontradoError(id_usuario)
-        
-        if not usuario.carrito.items:
-            console.print("[yellow]El carrito está vacío[/yellow]")
-            return
+        usuario: Usuario = self.obtener_usuario_por_id(id_usuario=id_usuario)
+        self.validar_carrito_no_vacio(usuario.carrito)
         
         tabla_carrito: Table = Table(title=f"Carrito de {usuario.nombre_usuario}", show_header=True, header_style="orange1") # show_header=True muestra el encabezado de la tabla y header_style le da estilo al encabezado
         tabla_carrito.add_column("ID Producto", style="cyan", width=12)
@@ -354,19 +355,10 @@ class TiendaServicios:
         
         console: Console = Console()
         usuarios: list[Usuario] = self.obtener_usuarios()
+        self.validar_lista_usuarios_no_vacia(usuarios=usuarios)
         
-        if id_gerente <= 0:
-            raise IdUsuarioInvalidoError(id_gerente)
-        
-        gerente: Usuario = next((este_usuario for este_usuario in usuarios if este_usuario.usuario_id == id_gerente), None)
-        if not gerente:
-            raise UsuarioNoEncontradoError(id_gerente)
-        if gerente.rol != Rol.GERENTE:
-            raise PermisoDenegadoError("Solo los gerentes pueden ver la lista de usuarios")
-        
-        if not usuarios:
-            console.print("[yellow]No hay usuarios en el sistema[/yellow]")
-            return
+        gerente: Usuario = self.obtener_usuario_por_id(id_usuario=id_gerente)
+        self.validar_usuario_gerente(self, usuario = gerente)
         
         table: Table = Table(title="Lista de Usuarios", show_header=True, header_style="bold magenta")
         table.add_column("ID", style="cyan", width=8)
@@ -395,18 +387,10 @@ class TiendaServicios:
         usuarios: list[Usuario] = self.obtener_usuarios()
         productos: list[Producto] = self.obtener_productos()
         
-        if id_gerente <= 0:
-            raise IdUsuarioInvalidoError(id_gerente)
-        
-        gerente: Usuario = next((este_usuario for este_usuario in usuarios if este_usuario.usuario_id == id_gerente), None)
-        if not gerente:
-            raise UsuarioNoEncontradoError(id_gerente)
-        if gerente.rol != Rol.GERENTE:
-            raise PermisoDenegadoError("Acceso denegado: Se requiere rol de Gerente")
-        
-        if not productos:
-            console.print("[yellow]No hay productos en el inventario[/yellow]")
-            return
+        gerente: Usuario = self.obtener_usuario_por_id(id_usuario=id_gerente)
+        self.validar_usuario_gerente(self, usuario = gerente)
+        productos: Producto = self.obtener_productos()
+        self.validar_lista_productos_no_vacia(productos=productos)
         
         table: Table = Table(title="Inventario de Productos", show_header=True, header_style="pink1")
         table.add_column("ID", style="cyan", width=8)

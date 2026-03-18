@@ -10,3 +10,13 @@ class Producto:
     nombre: str
     precio: float
     stock: int
+    
+    def __post_init__(self):
+        if self.producto_id <= 0:
+            raise IdProductoInvalidoError(self.producto_id)
+        if not self.nombre.strip():
+            raise NombreProductoInvalidoError(self.nombre)
+        if self.precio <= 0:
+            raise CantidadInvalidaError(self.precio)
+        if self.stock < 0:
+            raise CantidadInvalidaError(self.stock)
