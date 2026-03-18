@@ -2,9 +2,11 @@ import typer
 from pathlib import Path
 from rich.console import Console
 
-from src.gerencia_app.almacenamiento import JSONStorage
-from gerencia_app.modelos.rol import Usuario, Producto, Rol
+from src.gerencia_app.modelos.usuario import Usuario
+from src.gerencia_app.modelos.rol import Rol
+from src.gerencia_app.modelos.producto import Producto
 from src.gerencia_app.servicios import TiendaServicios
+from src.gerencia_app.almacenamiento import JSONStorage
 
 from src.gerencia_app.exepciones import TiendaError
 

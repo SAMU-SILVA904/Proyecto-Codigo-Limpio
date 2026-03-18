@@ -5,9 +5,8 @@ from typing import List
 from src.gerencia_app.modelos.usuario import Usuario
 from src.gerencia_app.modelos.rol import Rol
 from src.gerencia_app.modelos.producto import Producto
-from src.gerencia_app.modelos.carrito import Carrito
 from src.gerencia_app.modelos.item_carrito import ItemCarrito
-from .almacenamiento import JSONStorage
+from src.gerencia_app.almacenamiento import JSONStorage
 
 from src.gerencia_app.exepciones import (
     StockInsuficienteError, 
@@ -188,8 +187,7 @@ class TiendaServicios:
 
         usuario_actual: Usuario = self.obtener_usuario_por_id(id_usuario=id_usuario)
         self.validar_usuario_empleado(usuario = usuario_actual)
-        self.validar_carrito_no_vacio(lista = usuario_actual.carrito.items)
-
+        self.validar_carrito_no_vacio(usuario_actual.carrito.items)
         for item in usuario_actual.carrito.items:
             producto_en_inventario: Producto = self.obtener_producto_por_id(id_producto=item.producto_id)
             self.validar_stock_suficiente(cantidad_solicitada=item.cantidad, producto=producto_en_inventario)
