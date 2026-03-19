@@ -88,7 +88,6 @@ def facturar_carrito(id_usuario: int):
     try:
         servicios.facturar_carrito(id_usuario=id_usuario)
         console.print("[bold green]Carrito facturado exitosamente[/bold green]")
-        servicios.mostrar_carrito(id_usuario=id_usuario)
     except TiendaError as error_unico:
         typer.secho(str(error_unico), fg=typer.colors.RED)
         raise typer.Exit(code=1)

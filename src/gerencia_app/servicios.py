@@ -45,7 +45,7 @@ class TiendaServicios:
         return self.almacenamiento_productos.load()
 
 
-    def obtener_usuario_por_id(self, id_usuario: int) -> Usuario:
+    def obtener_usuario_por_id(self, id_usuario: int, lista_a_buscar: list[Usuario]) -> Usuario:
         """
         Trae y devuelve un usuario específico según su ID.
         Valida: el id del usuario.
@@ -54,15 +54,14 @@ class TiendaServicios:
         if id_usuario <= 0:
             raise IdUsuarioInvalidoError(id_usuario)
         
-        usuarios: list[Usuario] = self.obtener_usuarios()
-        usuario: Usuario = next((este_usuario for este_usuario in usuarios if este_usuario.usuario_id == id_usuario), None)
+        usuario: Usuario = next((este_usuario for este_usuario in lista_a_buscar if este_usuario.usuario_id == id_usuario), None)
         
         if not usuario:
             raise UsuarioNoEncontradoError(id_usuario)
         
         return usuario
 
-    def obtener_producto_por_id(self, id_producto: int) -> Producto:
+    def obtener_producto_por_id(self, id_producto: int,lista_a_buscar: list[Producto]) -> Producto:
         """
         Trae y devuelve un producto específico según su ID.
         Valida: el id del producto.
@@ -71,8 +70,7 @@ class TiendaServicios:
         if id_producto <= 0:
             raise IdProductoInvalidoError(id_producto)
         
-        productos: list[Producto] = self.obtener_productos()
-        producto: Producto = next((este_producto for este_producto in productos if este_producto.producto_id == id_producto), None)
+        producto: Producto = next((este_producto for este_producto in lista_a_buscar if este_producto.producto_id == id_producto), None)
         
         if not producto:
             raise ProductoNoEncontradoError(id_producto)
@@ -154,11 +152,12 @@ class TiendaServicios:
         self.validar_cantidad_valida(cantidad=cantidad)
         
         usuarios: list[Usuario] = self.obtener_usuarios()
+        productos: list[Producto] = self.obtener_productos()
         
-        usuario_actual: Usuario = self.obtener_usuario_por_id(id_usuario=id_usuario)
+        usuario_actual: Usuario = self.obtener_usuario_por_id(id_usuario=id_usuario, lista_a_buscar=usuarios)
         self.validar_usuario_empleado(usuario = usuario_actual)
         
-        producto: Producto = self.obtener_producto_por_id(id_producto=id_producto)
+        producto: Producto = self.obtener_producto_por_id(id_producto=id_producto, lista_a_buscar=productos)
         self.validar_stock_suficiente(cantidad_solicitada=cantidad, producto=producto)
         
         item_existente: ItemCarrito = self.obtener_item_carrito_por_id(usuario=usuario_actual, id_producto=id_producto)
@@ -185,11 +184,11 @@ class TiendaServicios:
         usuarios: list[Usuario] = self.obtener_usuarios()
         productos: list[Producto] = self.obtener_productos()
 
-        usuario_actual: Usuario = self.obtener_usuario_por_id(id_usuario=id_usuario)
+        usuario_actual: Usuario = self.obtener_usuario_por_id(id_usuario=id_usuario, lista_a_buscar=usuarios)
         self.validar_usuario_empleado(usuario = usuario_actual)
         self.validar_carrito_no_vacio(usuario_actual.carrito.items)
         for item in usuario_actual.carrito.items:
-            producto_en_inventario: Producto = self.obtener_producto_por_id(id_producto=item.producto_id)
+            producto_en_inventario: Producto = self.obtener_producto_por_id(id_producto= item.producto_id, lista_a_buscar=productos)
             self.validar_stock_suficiente(cantidad_solicitada=item.cantidad, producto=producto_en_inventario)
             producto_en_inventario.stock -= item.cantidad
         
@@ -205,7 +204,7 @@ class TiendaServicios:
         """
 
         usuarios: list[Usuario] = self.obtener_usuarios()
-        usuario_actual: Usuario = self.obtener_usuario_por_id(id_usuario=id_usuario)
+        usuario_actual: Usuario = self.obtener_usuario_por_id(id_usuario=id_usuario, lista_a_buscar=usuarios)
         self.validar_usuario_empleado(usuario = usuario_actual)
         
         
@@ -221,14 +220,16 @@ class TiendaServicios:
         """
         
         productos: list[Producto] = self.obtener_productos()
+        usuarios: list[Usuario] = self.obtener_usuarios()
         
-        gerente: Usuario = self.obtener_usuario_por_id(id_usuario=id_gerente)
+        gerente: Usuario = self.obtener_usuario_por_id(id_usuario=id_gerente, lista_a_buscar=usuarios)
         self.validar_usuario_gerente(usuario = gerente)
 
-        producto_a_actualizar: Producto = self.obtener_producto_por_id(id_producto=id_producto)
+        producto_a_actualizar: Producto = self.obtener_producto_por_id(id_producto=id_producto, lista_a_buscar=productos)
         self.validar_cantidad_valida(cantidad_a_agregar)
 
         producto_a_actualizar.stock += cantidad_a_agregar
+        productos[productos.index(producto_a_actualizar)] = producto_a_actualizar # Index devuelve la posición del producto a actualizar en la lista de productos.
         self.almacenamiento_productos.save(productos)
 
     def crear_producto(self, id_gerente: int, nombre_nuevo_producto: str, precio_nuevo_producto: float, stock_nuevo_producto: int) -> None:
@@ -238,9 +239,9 @@ class TiendaServicios:
         """
         
         productos: list[Producto] = self.obtener_productos()
+        usuarios: list[Usuario] = self.obtener_usuarios()
         
-        
-        gerente: Usuario = self.obtener_usuario_por_id(id_usuario=id_gerente)
+        gerente: Usuario = self.obtener_usuario_por_id(id_usuario=id_gerente, lista_a_buscar=usuarios)
         self.validar_usuario_gerente(usuario = gerente)
         
         productos: list[Producto] = self.obtener_productos()
@@ -263,7 +264,7 @@ class TiendaServicios:
         
         usuarios: list[Usuario] = self.obtener_usuarios()
         
-        gerente: Usuario = self.obtener_usuario_por_id(id_usuario=id_gerente)
+        gerente: Usuario = self.obtener_usuario_por_id(id_usuario=id_gerente, lista_a_buscar=usuarios)
         self.validar_usuario_gerente(usuario = gerente)
 
         if any(este_usuario.nombre_usuario.lower() == nombre_nuevo_usuario.lower() for este_usuario in usuarios):
@@ -280,18 +281,12 @@ class TiendaServicios:
         Elimina un producto del inventario.
         Valida: el id del gerente, el id del producto y permiso de usuario (solo gerentes pueden ejecutar esta acción).
         """
-        
-        if id_gerente <= 0:
-            raise IdUsuarioInvalidoError(id_gerente)
-        
-        if id_producto <= 0:
-            raise IdProductoInvalidoError(id_producto)
-        
-        gerente: Usuario = self.obtener_usuario_por_id(id_usuario=id_gerente)
+        usuarios: list[Usuario] = self.obtener_usuarios()
+        gerente: Usuario = self.obtener_usuario_por_id(id_usuario=id_gerente, lista_a_buscar=usuarios)
         self.validar_usuario_gerente(usuario = gerente)
 
         productos: list[Producto] = self.obtener_productos()
-        producto_a_eliminar: Producto =self.obtener_producto_por_id(id_producto=id_producto)
+        producto_a_eliminar: Producto =self.obtener_producto_por_id(id_producto=id_producto, lista_a_buscar=productos)
         
         productos.remove(producto_a_eliminar)
         self.almacenamiento_productos.save(productos)
@@ -303,11 +298,11 @@ class TiendaServicios:
         """
         
         usuarios: list[Usuario] = self.obtener_usuarios()
-        gerente: Usuario = self.obtener_usuario_por_id(id_usuario=id_gerente)
+        gerente: Usuario = self.obtener_usuario_por_id(id_usuario=id_gerente, lista_a_buscar=usuarios)
         self.validar_usuario_gerente(usuario = gerente)
         
 
-        usuario_a_eliminar: Usuario = self.obtener_usuario_por_id(id_usuario=id_usuario)
+        usuario_a_eliminar: Usuario = self.obtener_usuario_por_id(id_usuario=id_usuario, lista_a_buscar=usuarios)
         
         usuarios.remove(usuario_a_eliminar)
         self.almacenamiento_usuarios.save(usuarios)
@@ -320,7 +315,8 @@ class TiendaServicios:
         
         console: Console = Console()
         
-        usuario: Usuario = self.obtener_usuario_por_id(id_usuario=id_usuario)
+        usuarios: list[Usuario] = self.obtener_usuarios()
+        usuario: Usuario = self.obtener_usuario_por_id(id_usuario=id_usuario, lista_a_buscar=usuarios)
         self.validar_carrito_no_vacio(usuario.carrito.items)
         
         tabla_carrito: Table = Table(title=f"Carrito de {usuario.nombre_usuario}", show_header=True, header_style="orange1") # show_header=True muestra el encabezado de la tabla y header_style le da estilo al encabezado
@@ -355,7 +351,7 @@ class TiendaServicios:
         usuarios: list[Usuario] = self.obtener_usuarios()
         self.validar_lista_usuarios_no_vacia(usuarios=usuarios)
         
-        gerente: Usuario = self.obtener_usuario_por_id(id_usuario=id_gerente)
+        gerente: Usuario = self.obtener_usuario_por_id(id_usuario=id_gerente, lista_a_buscar=usuarios)
         self.validar_usuario_gerente(usuario = gerente)
         
         table: Table = Table(title="Lista de Usuarios", show_header=True, header_style="bold magenta")
@@ -383,7 +379,8 @@ class TiendaServicios:
         
         console: Console = Console()
         
-        gerente: Usuario = self.obtener_usuario_por_id(id_usuario=id_gerente)
+        usuarios: list[Usuario] = self.obtener_usuarios()
+        gerente: Usuario = self.obtener_usuario_por_id(id_usuario=id_gerente, lista_a_buscar=usuarios)
         self.validar_usuario_gerente(usuario = gerente)
         
         productos: Producto = self.obtener_productos()

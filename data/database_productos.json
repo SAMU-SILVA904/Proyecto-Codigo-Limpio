@@ -3,7 +3,7 @@
         "producto_id": 101,
         "nombre": "Leche Entera",
         "precio": 4500.0,
-        "stock": 100
+        "stock": 90
     },
     {
         "producto_id": 102,
@@ -27,12 +27,6 @@
         "producto_id": 105,
         "nombre": "PRoducto_prueba1",
         "precio": 2000.0,
-        "stock": 10
-    },
-    {
-        "producto_id": 106,
-        "nombre": "producto_imagen",
-        "precio": 1.0,
-        "stock": 50
+        "stock": 5
     }
 ]

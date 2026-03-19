@@ -94,7 +94,7 @@ class CarritoError(TiendaError):
 
 class CarritoVacioError(CarritoError):
     def __init__(self) -> None:
-        super().__init__("El carrito está vacío, no se puede facturar")
+        super().__init__("El carrito está vacío, agrega productos antes de prodceder con el comando")
 
 
 class StockInsuficienteError(CarritoError):

@@ -1,6 +1,6 @@
 # Sistema de Gestión de Supermercado 🛒
 
-**Gerencia App — Arquitectura de Código Limpio** **Estudiante:** Joaquín Laura Pascua  
+**Gerencia App — Arquitectura de Código Limpio** **Estudiante:** Samuel Silva Cortés
 **Institución:** Universidad de Medellín
 
 ---

@@ -10,11 +10,5 @@
         "nombre_usuario": "silva_empleado",
         "rol": "empleado",
         "carrito": []
-    },
-    {
-        "usuario_id": 3,
-        "nombre_usuario": "Usuario_imagen",
-        "rol": "empleado",
-        "carrito": []
     }
 ]

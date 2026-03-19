@@ -65,57 +65,7 @@ uv run main.py crear-producto a "b" c d
 
 ---
 
-## N. Mostrar Carrito
-
-Comando para mostrar el carrito de un usuario específico.
-
-```Bash
-uv run main.py mostrar-carrito a
-```
->* `a` corresponde a el id del usuario (debe ser un numero entero).
-
-
-
----
-
-
-## 5. Agregar al Carrito
-
-Comando para agregar un producto al carrito de un usuario.
-
-```Bash
-uv run main.py agregar-al-carrito a b c
-```
->* `a` corresponde a el id del usuario (debe ser un numero entero).
->* `b` corresponde a el id del producto (debe ser un numero entero).
->* `c` corresponde a la cantidad (debe ser un numero entero).
-
----
-
-## 6. Facturar Carrito
-
-Comando para facturar el carrito de un usuario, mostrando el total a pagar y vaciando el carrito.
-
-```Bash
-uv run main.py facturar-carrito a
-```
->* `a` corresponde a el id del usuario (debe ser un numero entero).
-
----
-
-## 7. Quitar Producto del Carrito
-
-Comando para quitar un producto del carrito de un usuario.
-
-```Bash
-uv run main.py quitar-producto-del-carrito a b
-```
->* `a` corresponde a el id del usuario (debe ser un numero entero).
->* `b` corresponde a el id del producto (debe ser un numero entero).
-
----
-
-## 8. Agregar Stock
+## 5. Agregar Stock
 !!! Prerequisito
     El usuario que intente realizar este comando debe tener como Rol "gerente".
 
@@ -128,11 +78,27 @@ uv run main.py agregar-stock a b c
 >* `b` corresponde a el id del producto (debe ser un numero entero).
 >* `c` corresponde a la cantidad a agregar (debe ser un numero entero).
 
+![Agregar Producto Imagen](img_guia/Agregar_stock.png)
+
 ---
 
+## 6. Eliminar Usuario
+!!! Prerequisito
+    El usuario que intente realizar este comando debe tener como Rol "gerente".
 
+Comando para que un gerente elimine un usuario existente en el sistema.
 
-## 10. Eliminar Producto
+```Bash
+uv run main.py eliminar-usuario a b
+```
+>* `a` corresponde a el id del gerente (debe ser un numero entero).
+>* `b` corresponde a el id del usuario a eliminar (debe ser un numero entero).
+
+![Eliminar Usuario Imagen](img_guia/Eliminar_usuario.png)
+
+---
+
+## 7. Eliminar Producto
 !!! Prerequisito
     El usuario que intente realizar este comando debe tener como Rol "gerente".
 
@@ -144,17 +110,65 @@ uv run main.py eliminar-producto a b
 >* `a` corresponde a el id del gerente (debe ser un numero entero).
 >* `b` corresponde a el id del producto a eliminar (debe ser un numero entero).
 
+![Eliminar Producto Imagen](img_guia/Eliminar_producto.png)
+
 ---
 
-## 11. Eliminar Usuario
-!!! Prerequisito
-    El usuario que intente realizar este comando debe tener como Rol "gerente".
+## 8. Mostrar Carrito
 
-Comando para que un gerente elimine un usuario existente en el sistema.
+Comando para mostrar el carrito de un usuario específico.
 
 ```Bash
-uv run main.py eliminar-usuario a b
+uv run main.py mostrar-carrito a
 ```
->* `a` corresponde a el id del gerente (debe ser un numero entero).
->* `b` corresponde a el id del usuario a eliminar (debe ser un numero entero).
+>* `a` corresponde a el id del usuario (debe ser un numero entero).
+
+![Mostrar carrito Usuario imagen](img_guia/Mostrar_carrito.png)
+
+---
+
+
+## 9. Agregar al Carrito
+
+Comando para agregar un producto al carrito de un usuario.
+
+```Bash
+uv run main.py agregar-al-carrito a b c
+```
+>* `a` corresponde a el id del usuario (debe ser un numero entero).
+>* `b` corresponde a el id del producto (debe ser un numero entero).
+>* `c` corresponde a la cantidad (debe ser un numero entero).
+
+![Agregar al carrito imagen](img_guia/Agregar_al_carrito.png)
+
+---
+
+## 10. Quitar Producto del Carrito
+
+Comando para quitar un producto del carrito de un usuario.
+
+```Bash
+uv run main.py quitar-producto-del-carrito a b
+```
+>* `a` corresponde a el id del usuario (debe ser un numero entero).
+>* `b` corresponde a el id del producto (debe ser un numero entero).
+
+![Quitar del carrito imagen](img_guia/Quitar_del_carrito.png)
+
+---
+
+
+## 11. Facturar Carrito
+
+Comando para facturar el carrito de un usuario, mostrando el total a pagar y vaciando el carrito.
+
+```Bash
+uv run main.py facturar-carrito a
+```
+>* `a` corresponde a el id del usuario (debe ser un numero entero).
+
+![Facturar Carrito Imagen](img_guia/Facturar_carrito.png)
+
+---
+
 
