@@ -28,5 +28,11 @@
         "nombre": "PRoducto_prueba1",
         "precio": 2000.0,
         "stock": 10
+    },
+    {
+        "producto_id": 106,
+        "nombre": "producto_imagen",
+        "precio": 1.0,
+        "stock": 50
     }
 ]

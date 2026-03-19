@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from src.gerencia_app.exepciones import (
     CantidadInvalidaError,
     NombreProductoInvalidoError,
-    IdProductoInvalidoError,
+    IdProductoInvalidoError
 )
 
 
@@ -11,7 +11,7 @@ class ItemCarrito:
     """
     Modelo para representar un item dentro del carrito de compras y validar sus datos.
     """
-
+    
     producto_id: int
     nombre: str
     precio_unitario: float

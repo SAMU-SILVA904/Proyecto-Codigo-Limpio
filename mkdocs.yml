@@ -16,7 +16,7 @@ theme:
         name: Switch to light mode
 
 plugins:
-  - search:
+  - search
   - mkdocstrings:
       handlers:
         python:
@@ -24,11 +24,20 @@ plugins:
 
 nav:
   - Inicio: index.md
-  - Referencia Tecnica: 
-    - Referencias: referencia_tecnica/api.md
-    - Comandos: referencia_tecnica/comandos.md
+  - Guia de usuario: 
+    - Persistencia: Guia_usuario/persistencia.md
+    - Comandos: Guia_usuario/comandos.md
+  - Referencias: api.md
+  - Inicializacion: inicializa_el_proyecto.md
+  - Arquitectura: arquitectura.md
 
 markdown_extensions:
   - admonition
   - pymdownx.details
-  - pymdownx.superfences
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+  - pymdownx.highlight
+  - pymdownx.inlinehilite
