@@ -409,3 +409,6 @@ class TiendaServicios:
         console.print(table)
         console.print(f"\n[bold green]Valor Total del Inventario: ${valor_total_inventario:.2f}[/bold green]")
 
+
+
+
