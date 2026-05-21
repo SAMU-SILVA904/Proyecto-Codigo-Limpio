@@ -11,7 +11,6 @@ class Settings(BaseSettings):
     supabase_url: str
     supabase_key: str
 
-    # ESTA LÍNEA ES LA CLAVE: El puerto local exacto
     api_base_url: str = "http://127.0.0.1:8000"
 
 settings = Settings()

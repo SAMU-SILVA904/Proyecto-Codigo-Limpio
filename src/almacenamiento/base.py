@@ -43,7 +43,7 @@ class BaseRepository:
         except StorageError:
             raise
         except Exception as exc:
-            raise StorageError(operation=operation, detail=str(exc)) from exc
+            raise StorageError(f"Error en la operación [{operation}]: {str(exc)}") from exc
 
     @staticmethod
     def _require_data(response: Any, operation: str) -> list[dict]:
@@ -67,7 +67,7 @@ class BaseRepository:
         data: list[dict] | None = getattr(response, "data", None)
         if not data:
             raise StorageError(
-                operation=operation,
-                detail="La operacion no retorno datos. Verifique los parametros.",
+                f"Error en la operación [{operation}]: La operacion no retorno datos. Verifique los parametros."
             )
         return data
+    

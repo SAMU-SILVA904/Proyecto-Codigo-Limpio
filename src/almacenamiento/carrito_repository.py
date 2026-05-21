@@ -24,68 +24,94 @@ class CarritoRepository(BaseRepository):
         data = getattr(response, "data", [])
         return data[0] if data else None
 
-    def crear_carrito(self, usuario_id: int) -> dict:
-        """Inicializa un carrito vacío para un usuario específico."""
-        op = f"crear_carrito_usuario_{usuario_id}"
-        response = self._execute(
-            op,
-            lambda: self.client.table(self._table_carrito).insert({"usuario_id": usuario_id}).execute()
-        )
-        return self._require_data(response, op)[0]
+    def agregar_o_actualizar_item(self, carrito_id: int, producto_id: int, cantidad: int) -> dict:
+        """
+        Inserta o incrementa un ítem en el carrito de compras.
+        Busca autónomamente el nombre y el precio del catálogo para cumplir el NOT NULL del SQL.
+        """
+        cid = int(carrito_id)
+        pid = int(producto_id)
+        qty = int(cantidad)
 
-    def agregar_o_actualizar_item(self, carrito_id: int, producto_id: int, cantidad: int, datos_prod: dict) -> dict:
-        """Suma unidades de un artículo al detalle del carrito o crea el registro si no existe."""
-        op = f"modificar_item_en_carrito_{carrito_id}"
-        
-        # 1. Comprobar si el producto ya está metido en ese carrito
-        check_res = self._execute(
-            op,
-            lambda: self.client.table(self._table_items)
+        prod_res = (
+            self.client.table("producto")
+            .select("nombre, precio")
+            .eq("producto_id", pid)
+            .maybe_single()
+            .execute()
+        )
+
+        if not prod_res or not prod_res.data:
+            raise Exception(f"El producto con ID {pid} no existe en el catálogo.")
+
+        nombre_producto = prod_res.data["nombre"]
+        precio_producto = float(prod_res.data["precio"])
+
+        existe = (
+            self.client.table(self._table_items)
             .select("*")
-            .eq("carrito_id", carrito_id)
-            .eq("producto_id", producto_id)
+            .eq("carrito_id", cid)
+            .eq("producto_id", pid)
+            .maybe_single()
             .execute()
         )
-        existing_items = getattr(check_res, "data", [])
-        
-        if existing_items:
-            # Si ya existe, sumamos la cantidad vieja con la nueva
-            nueva_cantidad = existing_items[0]["cantidad"] + cantidad
-            item_id = existing_items[0]["item_id"]
-            
-            response = self._execute(
-                op,
-                lambda: self.client.table(self._table_items)
-                .update({"cantidad": nueva_cantidad})
-                .eq("item_id", item_id)
-                .execute()
-            )
-        else:
-            # Si no existe, insertamos el renglón con los datos espejo exigidos por el SQL
-            response = self._execute(
-                op,
-                lambda: self.client.table(self._table_items)
-                .insert({
-                    "carrito_id": carrito_id,
-                    "producto_id": producto_id,
-                    "nombre": datos_prod["nombre"],
-                    "precio_unitario": datos_prod["precio"],
-                    "cantidad": cantidad
-                })
-                .execute()
-            )
-        return self._require_data(response, op)[0]
 
-    def eliminar_item_del_carrito(self, carrito_id: int, producto_id: int) -> bool:
-        """Remueve por completo un producto del detalle del carrito."""
-        op = f"eliminar_item_p_{producto_id}_de_carrito_{carrito_id}"
-        response = self._execute(
-            op,
-            lambda: self.client.table(self._table_items)
-            .delete()
-            .eq("carrito_id", carrito_id)
-            .eq("producto_id", producto_id)
-            .execute()
-        )
-        data = getattr(response, "data", [])
-        return len(data) > 0
+        if existe and existe.data:
+            nueva_cantidad = existe.data["cantidad"] + qty
+            result = (
+                self.client.table(self._table_items)
+                .update({"cantidad": nueva_cantidad})
+                .eq("item_id", existe.data["item_id"]) 
+                .execute()
+            )
+            return result.data[0]
+        else:
+            payload = {
+                "carrito_id": cid,
+                "producto_id": pid,
+                "nombre": nombre_producto,
+                "precio_unitario": precio_producto,
+                "cantidad": qty
+            }
+            result = (
+                self.client.table(self._table_items)
+                .insert(payload)
+                .execute()
+            )
+            return result.data[0]
+
+    def eliminar_item_del_carrito(self, usuario_id: int, producto_id: int) -> bool:
+            """
+            Elimina el renglón de item_carrito cruzando primero el ID del usuario 
+            para encontrar su cabecera real.
+            """
+            try:
+                uid = int(usuario_id)
+                pid = int(producto_id)
+
+                carrito_res = (
+                    self.client.table("carrito")
+                    .select("carrito_id")
+                    .eq("usuario_id", uid)
+                    .maybe_single()
+                    .execute()
+                )
+
+                if not carrito_res or not carrito_res.data:
+                    return False 
+
+                cid = carrito_res.data["carrito_id"]
+
+                delete_res = (
+                    self.client.table("item_carrito")
+                    .delete()
+                    .eq("carrito_id", cid)
+                    .eq("producto_id", pid)
+                    .execute()
+                )
+
+                return len(delete_res.data) > 0
+
+            except Exception as e:
+                print(f"[REPOS_ERROR] Fallo al remover ítem: {str(e)}")
+                return False

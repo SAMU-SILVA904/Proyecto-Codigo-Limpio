@@ -18,14 +18,14 @@ def main():
 
     opcion = st.sidebar.radio(
         "Módulos del Sistema:",
-        ["Dashboard", "Usuarios", "Productos", "Gestión de Carritos"],
+        ["Menú", "Usuarios", "Productos", "Gestión de Carritos"],
     )
 
     st.sidebar.divider()
     st.sidebar.info("Sesión activa: Administrador de Sistemas")
 
-    if opcion == "Dashboard":
-        st.title("📊 Panel de Control General")
+    if opcion == "Menú":
+        st.title("🏪 Menú Principal")
         st.write(
             "Bienvenido al sistema de administración de supermercado. "
             "Use el menú lateral de la izquierda para navegar de forma fluida entre los módulos disponibles."

@@ -38,34 +38,31 @@ class CarritoService:
             
         return carrito
 
-    def agregar_producto_a_carrito(self, usuario_id: int, producto_id: int, cantidad: int) -> dict:
-        """Agrega una cantidad determinada de un producto al carrito personal."""
-        if cantidad <= 0:
-            raise StorageError(operation="agregar_item", detail="La cantidad a agregar debe ser mayor a cero.")
+    def agregar_producto_a_carrito(self, usuario_id: int, producto_id: int, cantidad: int, datos_prod: dict = None) -> dict:
+        """
+        Orquesta la adición de productos al carrito. 
+        Soporta firmas con 3 o 4 argumentos para evitar errores de recarga en el router.
+        """
+        carrito = self.carrito_repo.obtener_carrito_con_items(usuario_id)
+        if not carrito:
+            carrito = self.carrito_repo.crear_carrito(usuario_id)
             
-        self._verificar_usuario_es_empleado(usuario_id)
-        
-        producto = self.producto_repo.obtener_por_id(producto_id)
-        if not producto:
-            raise StorageError(operation="agregar_item", detail=f"El producto con ID {producto_id} no existe.")
-            
-        carrito_base = self.obtener_o_inicializar_carrito(usuario_id)
-        carrito_id = carrito_base["id"]
-        
-        return self.carrito_repo.agregar_o_actualizar_item(carrito_id, producto_id, cantidad)
+        carrito_id = carrito["carrito_id"]
+
+        return self.carrito_repo.agregar_o_actualizar_item(
+            carrito_id=carrito_id,
+            producto_id=producto_id,
+            cantidad=cantidad
+        )
 
     def eliminar_producto_de_carrito(self, usuario_id: int, producto_id: int) -> bool:
-        """Remueve por completo un producto del carrito del empleado (Operación DELETE)."""
-        self._verificar_usuario_es_empleado(usuario_id)
-        
-        carrito_base = self.obtener_o_inicializar_carrito(usuario_id)
-        carrito_id = carrito_base["id"]
-        
-        exito = self.carrito_repo.eliminar_item_directo(carrito_id, producto_id)
-        if not exito:
-            raise StorageError(operation="eliminar_item", detail="El producto no se encontraba en el carrito.")
-        return exito
-
+            """Elimina por completo un artículo del carrito de un empleado."""
+            fue_eliminado = self.carrito_repo.eliminar_item_del_carrito(usuario_id, producto_id)
+            
+            if not fue_eliminado:
+                raise StorageError("No se pudo eliminar el artículo. Verifica si el producto o el carrito existen.")
+                
+            return True
 
 
 

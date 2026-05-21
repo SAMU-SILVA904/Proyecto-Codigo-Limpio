@@ -8,8 +8,6 @@ from src.core.excepciones import PermisoDenegadoError, StorageError
 router = APIRouter(prefix="/productos", tags=["Productos"])
 _service = ProductoService()
 
-
-# ── [GET] Consultar Todo el Catálogo (Público) ────────────────────────────────
 @router.get("/", response_model=list[ProductoResponse])
 def listar_productos():
     """Retorna la lista completa de productos disponibles en el supermercado."""
@@ -21,8 +19,6 @@ def listar_productos():
             detail=exc.detail
         )
 
-
-# ── [GET] Consultar Producto por ID ───────────────────────────────────────────
 @router.get("/{producto_id}", response_model=ProductoResponse)
 def obtener_producto(producto_id: int):
     """Busca un producto específico mediante su producto_id."""
@@ -34,8 +30,6 @@ def obtener_producto(producto_id: int):
             detail=exc.detail
         )
 
-
-# ── [POST] Crear un Nuevo Producto (Solo Gerente) ─────────────────────────────
 @router.post("/", response_model=ProductoResponse, status_code=status.HTTP_201_CREATED)
 def crear_producto(usuario_id: int, producto: ProductoCreate):
     """Permite registrar un producto en el inventario. Requiere ID de Gerente."""
@@ -52,8 +46,6 @@ def crear_producto(usuario_id: int, producto: ProductoCreate):
             detail=exc.detail
         )
 
-
-# ── [PATCH] Actualizar Producto Existente (Solo Gerente) ──────────────────────
 @router.patch("/{producto_id}", response_model=ProductoResponse)
 def actualizar_producto(usuario_id: int, producto_id: int, producto_data: dict):
     """Modifica de forma parcial o total las propiedades de un producto."""
@@ -70,8 +62,6 @@ def actualizar_producto(usuario_id: int, producto_id: int, producto_data: dict):
             detail=exc.detail
         )
 
-
-# ── [DELETE] Eliminar Producto (Solo Gerente) ─────────────────────────────────
 @router.delete("/{producto_id}")
 def eliminar_producto(usuario_id: int, producto_id: int):
     """Remueve físicamente un producto del inventario mediante su producto_id."""

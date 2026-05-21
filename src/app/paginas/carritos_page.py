@@ -1,4 +1,4 @@
-"""Página de Streamlit: Gestión de Carritos de Compra (Exclusivo Empleados)."""
+""""Página de Streamlit: Gestión de Carritos de Compra (Exclusivo Empleados)."""
 
 import streamlit as st
 from src.app.api_client import ApiClient
@@ -7,30 +7,34 @@ client = ApiClient()
 
 def _show_cart_section() -> None:
     st.subheader("Mi Carrito Personal")
-    usuario_id = st.number_input("Ingresa tu ID de Empleado", min_value=31, value=31, step=1, key="cart_uid")
+    usuario_id = st.number_input("Ingresa tu ID de Empleado", min_value=1, value=35, step=1, key="cart_uid")
     
-    if st.button("Sincronizar mi Carrito", type="primary"):
+    if st.button("Mostrar mi carrito", type="primary"):
         carrito, err = client.get(f"/carritos/{usuario_id}")
         if err:
             st.error(f"Operación no válida: {err}")
-        elif not carrito or not carrito.get("items"):
+        elif not carrito or not carrito.get("item_carrito"):
             st.info("Tu carrito personal está vacío actualmente.")
         else:
             st.success(f"¡Carrito cargado con éxito para el usuario {usuario_id}!")
+            
             tabla_items = [
                 {
-                    "Ítem ID": item["id"],
+                    "Ítem ID": item["item_id"],        
                     "Producto ID": item["producto_id"],
+                    "Descripción": item["nombre"],     
+                    "Precio Unitario": f"${item['precio_unitario']:,}", 
                     "Cantidad": item["cantidad"],
+                    "Subtotal": f"${(item['precio_unitario'] * item['cantidad']):,}"
                 }
-                for item in carrito["items"]
+                for item in carrito["item_carrito"]
             ]
             st.dataframe(tabla_items, use_container_width=True, hide_index=True)
 
 def _form_add_item() -> None:
     st.subheader("Añadir Ítems al Carrito")
     with st.form("form_add_cart"):
-        uid = st.number_input("Mi ID de Empleado", min_value=31, step=1)
+        uid = st.number_input("Mi ID de Empleado", min_value=1, value=35, step=1)
         pid = st.number_input("ID del Producto a comprar", min_value=1, step=1)
         qty = st.number_input("Cantidad de unidades", min_value=1, value=1, step=1)
         submitted = st.form_submit_button("Agregar al Carrito", type="primary")
@@ -46,7 +50,7 @@ def _form_add_item() -> None:
 def _form_remove_item() -> None:
     st.subheader("Remover Ítem por Completo")
     with st.form("form_del_cart"):
-        uid = st.number_input("Mi ID de Empleado", min_value=31, step=1, key="del_c_uid")
+        uid = st.number_input("Mi ID de Empleado", min_value=1, value=35, step=1, key="del_c_uid")
         pid = st.number_input("ID del Producto a quitar", min_value=1, step=1, key="del_c_pid")
         submitted = st.form_submit_button("Eliminar del Carrito", type="primary")
 
@@ -67,8 +71,4 @@ def render() -> None:
     with tab_view: _show_cart_section()
     with tab_add: _form_add_item()
     with tab_remove: _form_remove_item()
-    
-    
-    
-
 
