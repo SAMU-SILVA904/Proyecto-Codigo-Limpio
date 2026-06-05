@@ -68,7 +68,10 @@ def render() -> None:
     st.divider()
 
     tab_view, tab_add, tab_remove = st.tabs(["Ver mi Carrito", "Agregar Artículos", "Quitar Artículos"])
-    with tab_view: _show_cart_section()
-    with tab_add: _form_add_item()
-    with tab_remove: _form_remove_item()
+    with tab_view:
+        _show_cart_section()
+    with tab_add:
+        _form_add_item()
+    with tab_remove:
+        _form_remove_item()
 

@@ -62,7 +62,8 @@ def _form_create(solicitante_id: int) -> None:
 
 def _form_update(solicitante_id: int, users: list[dict]) -> None:
     """Formulario para editar datos de una cuenta."""
-    if not users: return
+    if not users: 
+        return
     st.subheader("Modificar Usuario")
     options = {f"Id: [{u['usuario_id']}] | Nombre: '{u['nombre_usuario']}'": u for u in users}
     selected_label = st.selectbox("Selecciona usuario a editar", list(options.keys()), key="edit_user_sel")
@@ -94,7 +95,8 @@ def _form_update(solicitante_id: int, users: list[dict]) -> None:
 
 def _form_delete(solicitante_id: int, users: list[dict]) -> None:
     """Formulario de eliminación con la función corregida eliminar_usuario y confirmación."""
-    if not users: return
+    if not users: 
+        return
     st.subheader("Eliminar Cuenta del Sistema")
     options = {f"Id: [{u['usuario_id']}] | Nombre: '{u['nombre_usuario']}'": u for u in users}
     selected_label = st.selectbox("Selecciona usuario a dar de baja", list(options.keys()), key="del_user_sel")
@@ -121,6 +123,9 @@ def render() -> None:
     st.divider()
 
     tab_create, tab_edit, tab_delete = st.tabs(["Registrar", "Editar", "Eliminar"])
-    with tab_create: _form_create(solicitante_id)
-    with tab_edit: _form_update(solicitante_id, users)
-    with tab_delete: _form_delete(solicitante_id, users)
+    with tab_create:
+        _form_create(solicitante_id)
+    with tab_edit:
+        _form_update(solicitante_id, users)
+    with tab_delete:
+        _form_delete(solicitante_id, users)

@@ -1,12 +1,9 @@
-# Guía de Inicio: Sistema de Gestión de Supermercado 🛒
+# Inicialización del Proyecto
 
-Bienvenido a la documentación oficial del **Sistema de Gestión de Inventario**. Este proyecto ha sido diseñado bajo estándares de **Código Limpio** y arquitectura por capas para garantizar un entorno administrativo robusto y profesional.
+Sigue estos pasos para configurar y ejecutar el entorno de desarrollo de forma local.
 
----
-
-## 🚀 Configuración del Entorno
-
-Sigue estos pasos para desplegar el proyecto en tu máquina local:
+!!! alert "Prerrequisitos"
+    El proyecto gestiona sus dependencias utilizando **uv**, un gestor de paquetes de Python extremadamente rápido. Asegúrate de tenerlo instalado en tu sistema antes de continuar.
 
 # 🛠️ Configuración del Entorno: De la Terminal al Primer Proyecto
 
@@ -58,24 +55,60 @@ A diferencia de las instalaciones tradicionales, con `uv` no necesitas instalar 
 # Descarga e instala la última versión de Python
 uv python install 3.12
 ```
+
 ---
 
-Una vez tenemos ``git`` , ``uv`` y ``python3`` lo que haremos es:
+# Pasos para la Configuración
 
-### 1. Clonar el repositorio
+## Paso 1: Clonar repositorio 🎭
+
+Abre tu terminal y descarga el proyecto ejecutando:
 ```bash
-git clone https://github.com/SAMU-SILVA904/Proyecto-Codigo-Limpio.git
+git clone <url-de-tu-repositorio>
+cd proyecto_cod_limpio
 ```
 
-### 2. Instalación de dependencias
-El proyecto utiliza uv para la gestión de paquetes. Instala todo lo necesario con:
+## Paso 2: Instalar Dependencias 🧵
 
-```Bash
+Utiliza `uv` para sincronizar el entorno virtual basado en el archivo lock e instalar de forma exacta todas las librerías necesarias:
+```bash
 uv sync
-uv run main.py --help
 ```
 
-Esto desplegará las opciones que tienes de CLI para ejecutar la aplicación.
+## Paso 3: Herramientas de Calidad 🚀
 
-Recuerda que puedes consultar la [Guía de Comandos](Guia_usuario/comandos.md) para aprender a usar la CLI.
+Puedes validar el estado del código ejecutando en tu terminal los siguientes comandos individuales:
 
+* **Verificar Estilo (Linter):**
+```bash
+uv run ruff check
+```
+
+* **Analizar Complejidad Ciclomática:**
+```bash
+uv run radon cc src -a
+```
+
+* **Ejecutar Suite de Pruebas Unitarias:**
+```bash
+uv run pytest -v
+```
+
+4. **Ejecución del Sistema Completo** 🌎
+
+Para poner en marcha la aplicación, debes levantar tanto el servidor de la API (backend) como la interfaz gráfica (frontend). Se recomienda abrir dos terminales independientes en la raíz del proyecto:
+
+### a. Levantar Endpoints (FastAPI):
+En la primera terminal, ejecuta el siguiente comando para activar el servidor local de la API y habilitar los endpoints de usuarios, productos y carritos:
+
+```bash
+uv run uvicorn src.api.main:app --reload
+```
+
+>* Adicionalmente, tambien puedes abrir una documentación de los endpoints automatica agregando `/docs` o `/redoc` al final del enlace que adjunta en la terminal.
+
+### b.Levantar la Interfaz Gráfica (Streamlit):
+En la segunda terminal, ejecuta el siguiente comando para iniciar la aplicación web de Streamlit que se conectará a los endpoints anteriores:
+```bash
+uv run streamlit run app.py
+```

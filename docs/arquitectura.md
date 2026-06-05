@@ -1,39 +1,117 @@
-# Arquitectura y Decisiones de Diseño 🏗️
+# Arquitectura del Sistema 🏗️
 
-En esta sección se detallan las bases técnicas que sostienen el sistema de gestión del supermercado, justificando el uso de estándares de industria para garantizar un código profesional, mantenible y escalable.
+El proyecto está estructurado bajo los conceptos de **Arquitectura Limpia**. Las dependencias fluyen estrictamente desde las capas externas hacia el núcleo de la lógica de negocio.
+
+
+## Descripción del Flujo de Componentes
+
+La arquitectura del sistema está organizada en capas independientes y componentes transversales que interactúan bajo reglas específicas para garantizar el aislamiento de la lógica de negocio y la seguridad de los datos.
+
+## 1. Flujo de Invocación Principal (Eje Vertical)
+
+### Capa de Aplicación e Interfaz (Streamlit)
+
+Representa el frontend de usuario. Su función es puramente visual y de captura de eventos; no procesa lógica de negocio pesada, sino que delega todas las operaciones realizando peticiones HTTP directamente a la API.
+
+### Capa de Endpoints (FastAPI)
+
+Es la puerta de entrada al backend. Los enrutadores (`routers/`, `main.py`, `dependencias.py`) reciben las solicitudes del frontend, administran el ciclo de vida de las dependencias y delegan la ejecución a los servicios correspondientes.
+
+### Capa de Servicios (Lógica de Negocio)
+
+Centraliza las reglas de negocio críticas del supermercado (`ProductoService`, `CarritoService`, `UsuarioService`). Es agnóstica de la procedencia de los datos e interactúa con el almacenamiento por medio de abstracciones (repositorios).
+
+### Capa de Almacenamiento (Persistencia)
+
+Los repositorios específicos (`ProductoRepository`, `UsuarioRepository`, `CarritoRepository`) encapsulan las consultas técnicas de lectura, escritura y mutación (*Query/Mutate*) hacia la instancia externa de **Supabase DB**, impidiendo el acoplamiento directo de la base de datos con las capas superiores.
 
 ---
 
-## 📂 Estructura de Proyecto: `src` Layout
+## 2. Capas y Relaciones de Soporte Transversal (Eje Horizontal)
 
-El proyecto implementa el patrón **src layout**, una convención recomendada en el ecosistema Python para evitar importaciones accidentales del código fuente y asegurar que las pruebas se ejecuten contra el paquete instalado.
+### Soporte de Sistema (Core)
 
-!!! info "Beneficios del src Layout"
-    * **Separación Clara:** El código de la aplicación está aislado de los archivos de configuración (`pyproject.toml`, `mkdocs.yml`, `tests/`).
-    * **Consistencia:** Facilita el empaquetado y la distribución del software.
-    * **Protección:** Evita que scripts en la raíz del proyecto interfieran con los módulos internos.
+#### Manejo de Errores y Excepciones (`excepciones.py`)
 
----
+Define los errores de negocio que los Servicios lanzan ante fallas de validación o de privilegios de usuario.
 
-## 🏛️ Separación por Capas
+#### Configuración del Sistema (`config.py`)
 
-Para este supermercado, se ha aplicado una **Arquitectura de Responsabilidad Única**, conectada de forma lineal para reducir el acoplamiento.
+Provee de manera segura las credenciales de entorno necesarias para que los Repositorios puedan instanciar la conexión con la base de datos de Supabase.
 
-### Flujo de Dependencias
+### Modelos y Validación (Esquemas)
+
+#### DATOS Pydantic / Esquemas
+
+Actúan como contratos de datos inmutables y de tipado seguro en diferentes puntos clave del sistema.
+
+**Valida con:**
+- La capa de Endpoints (FastAPI) los utiliza para validar el formato de entrada de las peticiones de red (*Payloads*).
+
+**Estructura con:**
+- Los Servicios los usan para modelar y procesar entidades seguras antes de operar con ellas.
+
+**Retorna:**
+- Los Repositorios devuelven la información limpia estructurada bajo estos mismos modelos de validación.
+
+## Diagrama de Capas y Componentes 🏛️
 
 ```mermaid
-flowchart LR
-    CLI[Capa de comandos] --> Servicios[Capa de logica]
-    Servicios <--> Almacenamiento[Capa de almacenamiento interno]
-    Servicios <--> Modelos[Capa de modelos de objetos]
+graph TD
+    subgraph Capa de Aplicación e Interfaz
+        ST[Streamlit App / Paginas]
+    end
+
+    subgraph Capa de Endpoints
+        EP[routers/, main.py, dependencias.py : FastAPI]
+    end
+
+    subgraph Capa de Servicios Lógica de Negocio
+        US[UsuarioService]
+        PS[ProductoService]
+        CS[CarritoService]
+    end
+
+    subgraph Capa de Almacenamiento Persistencia
+        UR[UsuarioRepository]
+        PR[ProductoRepository]
+        CR[CarritoRepository]
+        SB[(Supabase DB)]
+    end
+
+    subgraph Modelos y Validación [Esquemas]
+        ESQ[DATOS Pydantic / Esquemas]
+    end
+
+subgraph Soporte de Sistema [Core]
+        COR[Manejo de Errores: config.py / excepciones.py]
+    end
+
+    ST -->|Invoca| EP
+    EP -->|Invoca| US
+    EP -->|Invoca| PS
+    EP -->|Invoca| CS
+
+    US -->|Depende de| UR
+    PS -->|Depende de| PR
+    PS -->|Depende de| UR
+    CS -->|Depende de| CR
+    CS -->|Depende de| UR
+    CS -->|Depende de| PR
+
+    UR -->|Query/Mutate| SB
+    PR -->|Query/Mutate| SB
+    CR -->|Query/Mutate| SB
+%% Flujos de datos transversales de Esquemas
+    EP -.->|Valida con| ESQ
+    US -.->|Estructura con| ESQ
+    UR -.->|Retorna| ESQ
+%% Soporte transversal de Core
+    COR -.->|Lanza Errores en| US
+    COR -.->|Provee Config a| UR
 ```
-# Tabla de Arquitectura por Capas 🏛️
 
-A continuación se detalla la estructura del sistema del supermercado, especificando la implementación real en el código y el principio de diseño aplicado a cada nivel.
+## Beneficios del Diseño 📂
 
-| Capa | Implementación en el Proyecto | Responsabilidad y Decisión de Diseño |
-| :--- | :--- | :--- |
-| **1. Interfaz (Presentación)** | `main.py` (Typer) / `streamlit_app.py` | **Punto de Entrada:** Se encarga exclusivamente de la interacción con el usuario. Al estar aislada, permite que el sistema funcione en terminal o web sin cambiar la lógica interna. |
-| **2. Aplicación (Servicios)** | `src/gerencia_app/servicios.py` | **Lógica de Negocio:** Actúa como mediador. Orquesta los "Casos de Uso" (ventas, registros, gestión de stock) coordinando las capas de Dominio e Infraestructura. |
-| **3. Dominio (Modelos)** | `src/gerencia_app/modelos/` | **Entidades Puras:** Define las estructuras base (`Usuario` y `Producto`). No depende de ninguna base de datos ni librería externa, manteniendo la integridad de los datos en memoria. |
-| **4. Infraestructura (Persistencia)** | `src/gerencia_app/almacenamiento.py` | **Persistencia Física:** Gestiona el acceso al disco duro. Utiliza `JSONStorage` para leer y escribir archivos físicos, abstrayendo al resto del sistema de cómo se guardan los datos. |
+* **Desacoplamiento:** La lógica de negocio no sabe ni le importa si los datos se guardan en Supabase, PostgreSQL o un archivo de texto; solo interactúa con la interfaz de los repositorios, Streamlit no sabe nada sobre la logica del negocio, simplemente hace el llamado a los end points y ellos a su vez desencadenan toda una reacción para que streamlit pueda mostrar lo que se pide.
+* **Testabilidad:** Permite inyectar dobles de prueba (`MagicMock`) reemplazando por completo la capa de almacenamiento para validar las reglas de negocio sin conexión a internet.

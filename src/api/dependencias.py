@@ -2,7 +2,6 @@
 Dependencias globales para la API de FastAPI.
 """
 
-from fastapi import Depends
 from src.services.usuario_service import UsuarioService
 from src.services.producto_service import ProductoService
 from src.services.carrito_service import CarritoService

@@ -1,35 +1,42 @@
-site_name: Gerencia pp
+site_name: Gestión de Supermercado - Código Limpio
+site_description: Documentación técnica del backend y lógica de negocio con Arquitectura Limpia
+
 theme:
   name: material
   palette:
     - scheme: default
-      primary: indigo
+      primary: teal
       accent: indigo
       toggle:
         icon: material/brightness-7
         name: Switch to dark mode
     - scheme: slate # modo oscuro
-      primary: indigo
+      primary: teal
       accent: indigo
       toggle:
         icon: material/brightness-4
         name: Switch to light mode
+  features:
+    - navigation.tabs
+    - navigation.sections
+    - code.copy
 
 plugins:
   - search
   - mkdocstrings:
       handlers:
         python:
-          paths: [src]
+          paths: [., src]
 
 nav:
   - Inicio: index.md
-  - Guia de usuario: 
-    - Persistencia: Guia_usuario/persistencia.md
-    - Comandos: Guia_usuario/comandos.md
-  - Referencias: api.md
-  - Inicializacion: inicializa_el_proyecto.md
-  - Arquitectura: arquitectura.md
+  - Inicialización: inicializa_el_proyecto.md
+  - Arquitectura del Sistema: arquitectura.md
+  - Lógica de Negocio (Services):
+    - Gestión de Usuarios: servicios/usuarios.md
+    - Catálogo de Productos: servicios/productos.md
+    - Carrito de Compras: servicios/carrito.md
+  - Referencias API: api.md
 
 markdown_extensions:
   - admonition

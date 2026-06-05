@@ -110,7 +110,8 @@ def _form_update(usuario_id: int, productos: list[dict]) -> None:
     
 
 def _form_delete(usuario_id: int, productos: list[dict]) -> None:
-    if not productos: return
+    if not productos: 
+        return
     st.subheader("🗑️ Eliminar Producto del Catálogo")
     
     options = {f"Id: [{p['producto_id']}] | Nombre: '{p['nombre']}'": p for p in productos}

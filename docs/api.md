@@ -1,43 +1,12 @@
-# Referencias API
+# Referencias de la API de Servicios ⚙️
 
-Documentación automática generada a partir del código fuente.
+Esta sección contiene la documentación técnica autogenerada directamente desde las firmas y *docstrings* del código fuente. 💾
 
+### Servicios de usuario 👤
+::: src.services.usuario_service.UsuarioService
 
-## Logica
+### Servicios de producto 💎
+::: src.services.producto_service.ProductoService
 
-### ⚙️ TiendaServicios
-::: gerencia_app.servicios.TiendaServicios
-
----
-
-##  Modelos
-
-### 👤 Usuario
-::: gerencia_app.modelos.usuario.Usuario
-
----
-
-### 🔐 Rol
-::: gerencia_app.modelos.rol.Rol
-
----
-
-### 🛒 Carrito
-::: gerencia_app.modelos.carrito.Carrito
-
----
-
-### 🛍️ Item Carrito
-::: gerencia_app.modelos.item_carrito.ItemCarrito
-
---- 
-
-### 💎 Producto
-::: gerencia_app.modelos.producto.Producto
-
---- 
-
-## Almacenamiento de data
-
-### 📑 JSONStorage
-::: gerencia_app.almacenamiento.JSONStorage
+### Servicios de carrito 🛒
+::: src.services.carrito_service.CarritoService
