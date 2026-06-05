@@ -20,8 +20,9 @@ jobs:
       - name: Run Ruff (linter)
         run: uv run ruff check 
 
+      - name: Chequear Calidad de Codigo
+        run: uv run radon cc src -a
+
       - name: Run tests
         run: uv run pytest -v
 
-      - name: Chequear Calidad de Codigo
-        run: uv run radon cc src -a
